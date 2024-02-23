@@ -1,0 +1,16 @@
+{
+  "include": ["src/**/*.ts", "rollup.config.ts"],
+  "exclude": ["node_modules"],
+  "compilerOptions": {
+    "strict": true,
+    "module": "esnext",
+    "target": "es6",
+    "moduleResolution": "node",
+    "noImplicitOverride": true,
+    "noUnusedLocals": true, // 不允许有未使用的变量
+    "esModuleInterop": true, // 修复由于ES规范和其他规范混合使用导致的引用错误
+    "useUnknownInCatchVariables": true, // 支持catch中error设置为Unknown类型
+    "forceConsistentCasingInFileNames": true,
+    // "skipLibCheck": true
+  }
+}
