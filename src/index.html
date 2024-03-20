@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="file" id="input" />
+    <script src="/lib/jszip/jszip.min.js"></script>
+    <script src="/dist/ooxml-parser.umd.js"></script>
+    <script>
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = async(e) => {
+          const data = e.target.result;
+          new OOXMLParser().parse(file).then(result => {
+            console.log(result);
+            console.dir(result);
+          });
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    </script>
+  </body>
+</html>

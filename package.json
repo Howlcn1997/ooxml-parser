@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "rimraf dist && rollup -c rollup.config.ts -w --configPlugin typescript",
+    "dev": "npm run build && concurrently \"npm run build:watch\" \"npm run run:watch\"",
+    "build:watch": "rollup -c rollup.config.ts -w --configPlugin typescript",
+    "run:watch": "nodemon --watch dist/ooxml-parser.cjs.js --exec node dist/ooxml-parser.cjs.js",
     "build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript"
   },
   "keywords": [],
@@ -16,12 +18,20 @@
     "@babel/preset-env": "^7.23.9",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@types/node": "^20.11.20",
+    "@typescript-eslint/eslint-plugin": "^7.0.2",
+    "@typescript-eslint/parser": "^7.0.2",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "nodemon": "^3.1.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.12.0",
     "tslib": "^2.6.2",
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@types/file-saver": "^2.0.7",
+    "file-saver": "^2.0.5",
     "jszip": "^3.10.1"
   }
 }
