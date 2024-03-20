@@ -23,9 +23,18 @@ class OOXMLParser {
 
   async parse(file: File, options: ParserOptions = {}) {
     this.zip = this.zip || (await this.loadFile(file));
-    const content = await readXmlFile(this.zip, '[Content_Types].xml');
-    console.log(options);
-    return content;
+    const ContentTypesXml = this.parseContentTypes(this.zip);
+    return ContentTypesXml;
   }
+
+  async parseContentTypes(zip: JSZip) {
+    await readXmlFile(zip, '[Content_Types].xml');
+  }
+
+  async parsePresentation() {}
+
+  async parseSlideMaster() {}
+
+  async parseSlideLayout() {}
 }
 export default OOXMLParser;
