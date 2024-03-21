@@ -10,4 +10,25 @@ export enum OOXMLFilenames {
   Unknown = 'unknown',
 }
 
-export interface ParserOptions {}
+export interface DocArrayNode {
+  tag: string;
+  attrs: Record<string, string>;
+  children?: DocArrayNode[];
+  parentNode?: DocArrayNode;
+  originNode: Node;
+  order: number;
+}
+
+export interface DocObjectNode {
+  attrs: Record<string, string>;
+  parentNode?: DocObjectNode;
+  originNode: Node;
+  order: number;
+  [key: string]:
+    | DocObjectNode[]
+    | DocObjectNode
+    | Record<string, string>
+    | Node
+    | undefined
+    | number;
+}
