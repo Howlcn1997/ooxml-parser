@@ -1,4 +1,4 @@
-import { DocObjectNode } from '../types';
+import { XmlNode } from '../xmlNode';
 
 enum FillType {
   Solid = 'solid',
@@ -7,4 +7,4 @@ enum FillType {
   Picture = 'picture',
 }
 
-export function parseFill(fillNode: DocObjectNode) {}
+export function parseFill(fillNode: XmlNode) {}

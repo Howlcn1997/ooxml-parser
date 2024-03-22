@@ -2,11 +2,11 @@ import JSZip from 'jszip';
 // import { saveAs } from 'file-saver';
 
 import { loadNodeModule, runtimeEnv } from './utils/env';
-import { DocArrayNode, DocObjectNode, ContentTypes, Presentation, Theme } from './types';
-import { getValueByPaths, readXmlFile } from './readXmlFile';
+import { ContentTypes, Presentation, Theme } from './types';
+import { readXmlFile } from './readXmlFile';
 import { pt2px } from './attrs-parse/unit';
 import { translate } from './config/translate';
-import { spParse, picParse } from './shape-parse';
+// import { spParse, picParse } from './shape-parse';
 import { XmlNode } from './xmlNode';
 import { Color } from './attrs-parse/types';
 import { parseColor } from './attrs-parse/color';
@@ -180,27 +180,9 @@ class OOXMLParser {
     // return [slideResult];
   }
 
-  parseSingleSlide(slide: DocObjectNode) {
-    const shapeNode = getValueByPaths(slide, ['p:cSld', 'p:spTree']) as DocObjectNode;
-    const shapes = [];
-    Object.entries(shapeNode).forEach(([tag, node]) => {
-      switch (tag) {
-        case 'p:sp':
-          shapes.push((Array.isArray(node) ? node : [node]).map(i => spParse(i as DocObjectNode, slide, {})));
-          break;
-        case 'p:pic':
-          shapes.push((Array.isArray(node) ? node : [node]).map(i => picParse(i as DocObjectNode)));
-          break;
-        default:
-          return {
-            type: 'unknown',
-          };
-      }
-    });
-    // return shapes;
-  }
+  parseSingleSlide(slide: XmlNode) {}
 
-  parsePic(node: DocObjectNode) {
+  parsePic(node: XmlNode) {
     // const shapeProps = dataFromStrings(node, ['p:spPr', '0', 'children']);
     // return shapeProps;
 

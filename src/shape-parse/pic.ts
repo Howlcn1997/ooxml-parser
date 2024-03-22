@@ -1,6 +1,7 @@
-import { DocObjectNode, Theme } from '../types';
+import {  Theme } from '../types';
+import { XmlNode } from '../xmlNode';
 
-export default function parse(node: DocObjectNode, slide: DocObjectNode, theme: Theme) {
+export default function parse(node: XmlNode, slide: XmlNode, theme: Theme) {
   console.log(slide, theme);
   return node;
 }
