@@ -7,9 +7,11 @@ export function parseColor(node: XmlNode): Color {
   for (const child of children) {
     switch (child.name) {
       case 'sysClr':
-        return { type: 'sysClr', value: child.attrs.lastClr };
+        return { type: 'sys', value: child.attrs.lastClr };
       case 'srgbClr':
-        return { type: 'sysClr', value: child.attrs.val };
+        return { type: 'srgb', value: child.attrs.val };
+      case 'schemeClr':
+        return { type: 'scheme', value: child.attrs.val };
     }
   }
   return { type: 'unknown', value: '' };

@@ -10,6 +10,7 @@ import { translate } from './config/translate';
 import { XmlNode } from './xmlNode';
 import { Color } from './attrs-parse/types';
 import { parseColor } from './attrs-parse/color';
+import { Fill, parseFill } from './attrs-parse/fill';
 
 interface ParserOptions {
   lengthFactor: number;
@@ -43,15 +44,15 @@ class OOXMLParser {
     this.zip = this.zip || (await this.loadFile(file));
     this.parserOptions = options || this.parserOptions;
     const contentTypes = await this.parseContentTypes();
-    const presentation = await this.parsePresentation();
-    const themes = await this.parseThemes(contentTypes.themes);
-
-    // const slides = await this.parseSlides(contentTypes.slides);
+    await this.parsePresentation();
+    await this.parseThemes(contentTypes.themes);
+    console.log('ooxml Data', this.store);
+    const slides = await this.parseSlides(contentTypes.slides);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
-    // await this.parseSlideMasters(contentTypes.slideMasters);
+    await this.parseSlideMasters(contentTypes.slideMasters);
 
     // await this.parseSlide(contentTypes.slides[1]);
-    return themes;
+    return slides;
   }
 
   /**
@@ -164,23 +165,46 @@ class OOXMLParser {
     return themes;
   }
 
+  /**
+   * 版式
+   */
   async parseSlideLayouts(paths: string[]) {
-    console.log('parseSlideLayouts', paths);
+    if (!this.zip) throw new Error('No zip file loaded');
+    for (const path of paths) {
+      const slideLayouts = await readXmlFile(this.zip, path, true);
+      console.log('slideLayouts', slideLayouts);
+    }
   }
 
   async parseSlideMasters(paths: string[]) {
-    console.log('parseSlideMasters', paths);
+    if (!this.zip) throw new Error('No zip file loaded');
+    for (const path of paths) {
+      const slideMaster = await readXmlFile(this.zip, path, true);
+      console.log('slideMaster', slideMaster);
+    }
   }
 
   async parseSlides(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
-    // 解析slide时使用object格式，方便快速查找
-    const slide = await readXmlFile(this.zip, paths[1], 'object');
-    const slideResult = this.parseSingleSlide(slide);
-    // return [slideResult];
-  }
 
-  parseSingleSlide(slide: XmlNode) {}
+    const slide = await readXmlFile(this.zip, paths[0], true);
+    const slideResult = parseSingleSlide(slide);
+    return [slideResult];
+
+    function parseSingleSlide(slide: XmlNode) {
+      const result: Record<string, any> = {};
+
+      let background: Fill | null = null;
+
+      const bg = slide.child('cSld')?.child('bg');
+      if (bg) background = parseFill(bg.child('bgPr') as XmlNode);
+
+      const spTree = slide.child('cSld')?.child('spTree');
+
+      console.log(slide);
+      return { background };
+    }
+  }
 
   parsePic(node: XmlNode) {
     // const shapeProps = dataFromStrings(node, ['p:spPr', '0', 'children']);
