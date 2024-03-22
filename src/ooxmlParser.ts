@@ -2,30 +2,14 @@ import JSZip from 'jszip';
 // import { saveAs } from 'file-saver';
 
 import { loadNodeModule, runtimeEnv } from './utils/env';
-import { DocArrayNode, DocObjectNode } from './types';
-import { dataFromStrings, getValueByPaths, readXmlFile } from './readXmlFile';
-import { pt2px } from './unit';
+import { DocArrayNode, DocObjectNode, ContentTypes, Presentation, Theme } from './types';
+import { getValueByPaths, readXmlFile } from './readXmlFile';
+import { pt2px } from './attrs-parse/unit';
 import { translate } from './config/translate';
-
-interface ContentTypes {
-  // 幻灯片文件地址
-  slides: string[];
-  // 幻灯片布局文件地址
-  slideLayouts: string[];
-  // 幻灯片主题文件地址
-  slideMasters: string[];
-  // 主题文件地址
-  themes: string[];
-}
-
-interface Presentation {
-  slideMasterIdList: string[];
-  slideIdList: string[];
-  slideSize: Record<string, string>;
-  noteSize: Record<string, string>;
-  // 默认文本样式
-  defaultTextStyle: Record<string, Record<string, string>>;
-}
+import { spParse, picParse } from './shape-parse';
+import { XmlNode } from './xmlNode';
+import { Color } from './attrs-parse/types';
+import { parseColor } from './attrs-parse/color';
 
 interface ParserOptions {
   lengthFactor: number;
@@ -60,13 +44,14 @@ class OOXMLParser {
     this.parserOptions = options || this.parserOptions;
     const contentTypes = await this.parseContentTypes();
     const presentation = await this.parsePresentation();
+    const themes = await this.parseThemes(contentTypes.themes);
 
-    const slides = await this.parseSlides(contentTypes.slides);
+    // const slides = await this.parseSlides(contentTypes.slides);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
     // await this.parseSlideMasters(contentTypes.slideMasters);
-    // await this.parseThemes(contentTypes.themes);
+
     // await this.parseSlide(contentTypes.slides[1]);
-    return slides;
+    return themes;
   }
 
   /**
@@ -85,12 +70,10 @@ class OOXMLParser {
     };
 
     const contentTypes = await readXmlFile(this.zip, '[Content_Types].xml');
-    if (!contentTypes.children) return result;
 
-    const overrides = contentTypes.children.filter((i: DocArrayNode) => i.tag === 'Override');
-    if (!overrides.length) return result;
+    const overrides = contentTypes.allChild('Override');
 
-    overrides.forEach((i: DocArrayNode) => {
+    overrides.forEach((i: XmlNode) => {
       switch (i.attrs.ContentType) {
         case 'application/vnd.openxmlformats-officedocument.presentationml.slide+xml':
           result.slides.push(i.attrs.PartName.substring(1));
@@ -140,20 +123,19 @@ class OOXMLParser {
       defaultTextStyle: {},
     };
     const presentation = await readXmlFile(this.zip, 'ppt/presentation.xml');
-    if (!presentation.children) return result;
 
-    presentation.children.forEach((i: DocArrayNode) => {
-      if (i.tag === 'p:sldMasterIdLst') {
-        result.slideMasterIdList = i.children?.map((j: DocArrayNode) => j.attrs['r:id']) || [];
-      } else if (i.tag === 'p:sldIdLst') {
-        result.slideIdList = i.children?.map((j: DocArrayNode) => j.attrs['r:id']) || [];
-      } else if (i.tag === 'p:sldSz') {
-        result.slideSize = this.pt2pxOfObject(i.attrs);
-      } else if (i.tag === 'p:notesSz') {
-        result.noteSize = this.pt2pxOfObject(i.attrs);
-      } else if (i.tag === 'p:defaultTextStyle') {
-        i.children?.forEach((j: DocArrayNode) => {
-          result.defaultTextStyle[j.tag] = this.pt2pxOfObject(j.attrs);
+    presentation.children.forEach((i: XmlNode) => {
+      if (i.name === 'sldMasterIdLst') {
+        result.slideMasterIdList = i.child('sldMasterId')?.attrs['r:id'];
+      } else if (i.name === 'sldIdLst') {
+        result.slideIdList = i.allChild('sldId').map(j => j.attrs['r:id']);
+      } else if (i.name === 'sldSz') {
+        result.slideSize = i.attrs;
+      } else if (i.name === 'notesSz') {
+        result.noteSize = i.attrs;
+      } else if (i.name === 'defaultTextStyle') {
+        i.children.forEach((j: XmlNode) => {
+          result.defaultTextStyle[j.name] = j.attrs;
         });
       }
     });
@@ -161,6 +143,33 @@ class OOXMLParser {
     this.store.set('presentation', result);
 
     return result;
+  }
+
+  async parseThemes(paths: string[]): Promise<Theme[]> {
+    if (!this.zip) throw new Error('No zip file loaded');
+    if (this.store.has('themes')) return this.store.get('themes');
+
+    const themeXmlNodes = await Promise.all(paths.map(i => readXmlFile(this.zip as JSZip, i)));
+    const themes = themeXmlNodes.map(i => {
+      const clrScheme: Record<string, Color> = {};
+
+      i.child('themeElements')
+        ?.child('clrScheme')
+        ?.children.forEach((j: XmlNode) => (clrScheme[j.name] = parseColor(j)));
+
+      return { clrScheme } as Theme;
+    });
+
+    this.store.set('themes', themes);
+    return themes;
+  }
+
+  async parseSlideLayouts(paths: string[]) {
+    console.log('parseSlideLayouts', paths);
+  }
+
+  async parseSlideMasters(paths: string[]) {
+    console.log('parseSlideMasters', paths);
   }
 
   async parseSlides(paths: string[]) {
@@ -177,10 +186,10 @@ class OOXMLParser {
     Object.entries(shapeNode).forEach(([tag, node]) => {
       switch (tag) {
         case 'p:sp':
-          shapes.push((Array.isArray(node) ? node : [node]).map(i => this.parseSp(i as DocObjectNode)));
+          shapes.push((Array.isArray(node) ? node : [node]).map(i => spParse(i as DocObjectNode, slide, {})));
           break;
         case 'p:pic':
-          shapes.push((Array.isArray(node) ? node : [node]).map(i => this.parsePic(i as DocObjectNode)));
+          shapes.push((Array.isArray(node) ? node : [node]).map(i => picParse(i as DocObjectNode)));
           break;
         default:
           return {
@@ -191,11 +200,6 @@ class OOXMLParser {
     // return shapes;
   }
 
-  parseSp(node: DocObjectNode) {
-    console.log(node);
-    return node;
-  }
-
   parsePic(node: DocObjectNode) {
     // const shapeProps = dataFromStrings(node, ['p:spPr', '0', 'children']);
     // return shapeProps;
@@ -203,26 +207,10 @@ class OOXMLParser {
     return node;
   }
 
-  async parseSlideLayouts(paths: string[]) {
-    console.log('parseSlideLayouts', paths);
-  }
-
-  async parseSlideMasters(paths: string[]) {
-    console.log('parseSlideMasters', paths);
-  }
-
-  async parseThemes(paths: string[]) {
-    console.log('parseTheme', paths);
-  }
-
-  pt2px(pt: string, unitName?: string) {
-    return pt2px(pt, this.parserOptions, unitName);
-  }
-
   pt2pxOfObject(obj: Record<string, any>) {
     const result: Record<string, any> = {};
     for (const key in obj) {
-      result[translate(key)] = this.pt2px(obj[key], key);
+      result[translate(key)] = pt2px(obj[key], this.parserOptions, key);
     }
     return result;
   }

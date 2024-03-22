@@ -1,20 +1,14 @@
 import JSZip from 'jszip';
 import { DocArrayNode, DocObjectNode } from './types';
+import { XmlNode } from './xmlNode';
 
-export async function readXmlFile(zip: JSZip, filename: string, resultFormat?: 'array'): Promise<DocArrayNode>;
-export async function readXmlFile(zip: JSZip, filename: string, resultFormat?: 'object'): Promise<DocObjectNode>;
-export async function readXmlFile(
-  zip: JSZip,
-  filename: string,
-  resultFormat: 'array' | 'object' = 'array'
-): Promise<DocArrayNode | DocObjectNode> {
+export async function readXmlFile(zip: JSZip, filename: string): Promise<XmlNode> {
   const zipFile = zip.file(filename);
   if (!zipFile) throw new Error(`File ${filename} not found`);
 
   const xmlString = await zipFile.async('string');
   const doc = xmlParser(xmlString);
-  console.log(doc);
-  return resultFormat === 'array' ? docArrayLossless(doc) : docObjectLossless(doc);
+  return new XmlNode(doc.children[0]);
 }
 
 export function xmlParser(xmlString: string) {

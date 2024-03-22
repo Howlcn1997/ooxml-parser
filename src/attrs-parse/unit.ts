@@ -1,4 +1,4 @@
-import { lengthPt, fontSizePt } from './config/pt';
+import { lengthPt, fontSizePt } from '../config/pt';
 
 interface PtFactor {
   lengthFactor: number;
