@@ -187,7 +187,7 @@ class OOXMLParser {
   async parseSlides(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
 
-    const slide = await readXmlFile(this.zip, paths[0], true);
+    const slide = await readXmlFile(this.zip, paths[2], true);
     const slideResult = parseSingleSlide(slide);
     return [slideResult];
 
