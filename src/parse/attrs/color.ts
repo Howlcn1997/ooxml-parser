@@ -1,5 +1,5 @@
-import { XmlNode } from '../xmlNode';
-import { Color } from './types';
+import { XmlNode } from '@/xmlNode';
+import { Color } from '@/parse/attrs/types';
 
 // node 中必须含有color相关属性，例如srgbClr、schemeClr等
 export function parseColor(node: XmlNode): Color {

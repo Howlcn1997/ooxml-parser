@@ -1,4 +1,4 @@
-import { RuntimeEnv } from '../types';
+import { RuntimeEnv } from '@/types';
 
 let _runtimeEnvCache: RuntimeEnv = RuntimeEnv.Unknown;
 export function runtimeEnv(): RuntimeEnv {

@@ -12,5 +12,9 @@
     "useUnknownInCatchVariables": true, // 支持catch中error设置为Unknown类型
     "forceConsistentCasingInFileNames": true,
     // "skipLibCheck": true
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   }
 }

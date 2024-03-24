@@ -1,4 +1,4 @@
-import { Color } from './attrs-parse/types';
+import { Color } from './parse/attrs/types';
 
 export enum RuntimeEnv {
   Browser = 'browser',
@@ -37,3 +37,7 @@ export interface Theme {
   // majorFontScheme: Record<string, string>;
   // minorFontScheme: Record<string, string>;
 }
+
+export interface SlideMaster {}
+
+export interface SlideLayout {}
