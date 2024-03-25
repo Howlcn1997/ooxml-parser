@@ -35,7 +35,7 @@ interface Store {
   contentTypes?: ContentTypes;
   presentation?: Presentation;
   themes?: Theme[];
-  Slides?: any[];
+  slides?: any[];
 }
 
 class OOXMLParser {
@@ -90,7 +90,7 @@ class OOXMLParser {
     await this.parseSlideMasters(contentTypes.slideMasters);
     await this.parseSlideLayouts(contentTypes.slideLayouts);
     await this.parseThemes(contentTypes.themes);
-    const slides = await this.parseSlides(contentTypes.slides);
+    const slides = await this.parseSlides([contentTypes.slides[2]]);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
     return this.store;
   }
@@ -191,13 +191,13 @@ class OOXMLParser {
 
     const themeXmlNodes = await Promise.all(paths.map(i => this.readXmlFile(i)));
     const themes = themeXmlNodes.map(i => {
-      const clrScheme: Record<string, Color> = {};
+      const schemeClr: Record<string, Color> = {};
 
       i.child('themeElements')
         ?.child('clrScheme')
-        ?.children.forEach((j: XmlNode) => (clrScheme[j.name] = parseColor(j)));
+        ?.children.forEach((j: XmlNode) => (schemeClr[j.name] = parseColor(j)));
 
-      return { clrScheme } as Theme;
+      return { schemeClr } as Theme;
     });
 
     this.store.set('themes', themes);

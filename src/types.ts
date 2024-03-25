@@ -33,7 +33,7 @@ export interface Presentation {
 }
 
 export interface Theme {
-  clrScheme: Record<string, Color>;
+  schemeClr: Record<string, Color>;
   // majorFontScheme: Record<string, string>;
   // minorFontScheme: Record<string, string>;
 }

@@ -8,19 +8,21 @@
   <body>
     <input type="file" id="input" />
     <script src="/lib/jszip/jszip.min.js"></script>
+    <script src="/lib/tinycolor2.min.js"></script>
     <script src="/dist/ooxml-parser.umd.js"></script>
     <script>
-        input.addEventListener('change', (e) => {
-          const file = e.target.files[0];
-          const reader = new FileReader();
-          reader.onload = async(e) => {
-            const data = e.target.result;
-            new OOXMLParser().parse(file).then(result => {
-              console.log(result);
-            });
-          };
-          reader.readAsArrayBuffer(file);
-        });
+      input.addEventListener('change',async (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = async(e) => {
+          const data = e.target.result;
+         window.ooxmlParser =  new OOXMLParser()
+         window.ooxmlParser.parse(file).then(result => {
+            console.log(result);
+          });
+        };
+        reader.readAsArrayBuffer(file);
+      });
     </script>
   </body>
 </html>

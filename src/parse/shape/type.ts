@@ -1,3 +1,6 @@
+import { Fill } from '../attrs/fill';
+import { Line } from '../attrs/types';
+
 export interface Element {
   type: string;
   // 水平翻转
@@ -8,6 +11,25 @@ export interface Element {
   height?: number;
   // 内边距
   padding?: number[];
+}
+
+export interface Base {
+  type: string;
+  fill?: Fill;
+  line?: Line;
+  // 大小
+  size?: Size;
+  pos?: Pos;
+}
+
+interface Size {
+  width: number;
+  height: number;
+}
+
+interface Pos {
+  top: number;
+  left: number;
 }
 
 export interface Shape extends Element {}

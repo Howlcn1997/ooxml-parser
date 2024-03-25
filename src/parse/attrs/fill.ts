@@ -11,15 +11,32 @@ enum FillType {
 }
 
 export interface Fill {
-  type: FillType;
-  value: Color | string;
+  type: string;
+  value: SolidFill | GradientFill | PicFill | PatternFill | BlipFill;
 }
 
-export interface Gradient {}
+type SolidFill = Color;
 
-export function parseFill(fillNode: XmlNode, parser: OOXMLParser): Fill {
-  
-  for (const child of fillNode.children) {
+export interface GradientFill {
+  type: 'linear' | 'radial' | 'rect' | 'path';
+  angle: number;
+  gsList: GradientStop[];
+}
+
+export interface GradientStop {
+  pos: number;
+  color: Color;
+}
+
+export interface PicFill {}
+
+// 纹理填充
+export interface PatternFill {}
+// 图案填充
+export interface BlipFill {}
+
+export async function parseFill(elementPr: XmlNode, parser: OOXMLParser): Fill | null {
+  for (const child of elementPr.children) {
     switch (child.name) {
       case 'solidFill':
         return {
@@ -43,10 +60,13 @@ export function parseFill(fillNode: XmlNode, parser: OOXMLParser): Fill {
         };
     }
   }
-  return {
-    type: FillType.Solid,
-    value: '000000',
-  };
+  return null;
 }
 
-export function parseGradient() {}
+export function parseGradientFill() {}
+
+export function parsePicFill() {}
+
+export function parsePatternFill() {}
+
+export function parseBlipFill() {}

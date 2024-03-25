@@ -10,7 +10,7 @@ export default async function parseSlideBackground(slidePath: string, parser: OO
   const slide = await parser.readXmlFile(slidePath);
   const slideBg = slide.child('cSld')?.child('bg');
 
-  if (slideBg) return parseFill(slideBg.child('bgPr') as XmlNode, parser);
+  if (slideBg) return await parseFill(slideBg.child('bgPr') as XmlNode, parser);
 
   const rels: Rel[] = await parseRelsBySlidePath(slidePath, parser);
   const relSlideLayout = rels.find(i => i.type === 'slideLayout');
@@ -20,7 +20,7 @@ export default async function parseSlideBackground(slidePath: string, parser: OO
   const slideLayout = await parser.readXmlFile(relSlideLayout.target);
   const slideLayoutBg = slideLayout.child('cSld')?.child('bg');
 
-  if (slideLayoutBg) return parseFill(slideLayoutBg.child('bgPr') as XmlNode, parser);
+  if (slideLayoutBg) return await parseFill(slideLayoutBg.child('bgPr') as XmlNode, parser);
 
   return null;
 }
