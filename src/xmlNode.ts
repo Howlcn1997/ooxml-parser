@@ -1,14 +1,20 @@
+interface Config {
+  cacheEnabled: boolean;
+}
+
 export class XmlNode {
   tag: string;
   name: string;
   parent: XmlNode | null = null;
   namespace: string | null = null;
+  config: Config;
   private _node: Element;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _attrs: Record<string, any> = {};
   private _children: XmlNode[] = [];
-  private _cache: Record<string, XmlNode[]> = {};
+  private _cache: Record<string, XmlNode[]> = new Map([]);
 
-  constructor(node: Element, parent?: XmlNode) {
+  constructor(node: Element, parent?: XmlNode, config?: Config) {
     this.tag = node.nodeName;
 
     const [namespace, name] = this.tag.split(':');
@@ -16,12 +22,13 @@ export class XmlNode {
     this.namespace = name ? namespace : '';
 
     this._node = node;
+    this.config = { cacheEnabled: true, ...(config || {}) };
     this.parent = parent || null;
   }
 
   get children() {
     if (this._children.length) return this._children;
-    this._children = Array.from(this._node.children).map(node => new XmlNode(node, this));
+    this._children = Array.from(this._node.children).map(node => new XmlNode(node, this, this.config));
     return this._children;
   }
 

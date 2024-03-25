@@ -41,12 +41,14 @@ export default async function parse(shape: XmlNode, parser: OOXMLParser) {
     top = (top - parseInt(chOff.y)) * cyRatio + +off.y;
   }
 
+  const lengthHandler = parser.config.lengthHandler;
+  
   return {
     flipV: flipV === '1',
     flipH: flipH === '1',
-    left: emusToPt(left, parser.config.lengthHandler),
-    top: emusToPt(top, parser.config.lengthHandler),
-    width: emusToPt(width, parser.config.lengthHandler),
-    height: emusToPt(height, parser.config.lengthHandler),
+    left: emusToPt(left, lengthHandler),
+    top: emusToPt(top, lengthHandler),
+    width: emusToPt(width, lengthHandler),
+    height: emusToPt(height, lengthHandler),
   };
 }
