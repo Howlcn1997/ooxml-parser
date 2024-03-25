@@ -18,7 +18,7 @@ interface ParserConfig {
   // 自定义长度处理器
   lengthHandler: (pt: number) => number;
   // 自定义字体大小处理器
-  fontSizeHandle: (pt: number) => number;
+  fontSizeHandler: (pt: number) => number;
   // 自定义图片媒体(png,gif,etc)资源处理器
   imageHandler: (file: File) => Promise<string>;
   // 自定义音频(mp3,wav,etc)资源处理器
@@ -44,7 +44,7 @@ class OOXMLParser {
 
   config: ParserConfig = {
     lengthHandler: pt => (pt / 3) * 4,
-    fontSizeHandle: pt => (pt / 3) * 4,
+    fontSizeHandler: pt => (pt / 3) * 4,
     imageHandler,
     audioHandler,
     videoHandler,
