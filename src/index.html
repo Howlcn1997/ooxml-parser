@@ -16,7 +16,7 @@
         const reader = new FileReader();
         reader.onload = async(e) => {
           const data = e.target.result;
-         window.ooxmlParser =  new OOXMLParser()
+         window.ooxmlParser = new OOXMLParser()
          window.ooxmlParser.parse(file).then(result => {
             console.log(result);
           });

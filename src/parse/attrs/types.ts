@@ -1,4 +1,4 @@
-type Scheme =
+export type Scheme =
   | 'accent1'
   | 'accent2'
   | 'accent3'
@@ -20,9 +20,16 @@ type Scheme =
 
 export interface Color {
   // css中的opacity为 不透明度, transparency = 100% - opacity
-  rgba: { r: number; g: number; b: number; a: number };
+  rgba: Rgba;
   scheme?: Scheme;
   transform?: ColorTransform;
+}
+
+export interface Rgba {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
 }
 
 /**

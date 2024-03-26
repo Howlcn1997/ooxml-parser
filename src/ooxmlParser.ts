@@ -195,7 +195,7 @@ class OOXMLParser {
 
       i.child('themeElements')
         ?.child('clrScheme')
-        ?.children.forEach((j: XmlNode) => (schemeClr[j.name] = parseColor(j)));
+        ?.children.forEach((j: XmlNode) => (schemeClr[j.name] = parseColor(j, this)));
 
       return { schemeClr } as Theme;
     });
