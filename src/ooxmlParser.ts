@@ -90,7 +90,7 @@ class OOXMLParser {
     await this.parseSlideMasters(contentTypes.slideMasters);
     await this.parseSlideLayouts(contentTypes.slideLayouts);
     await this.parseThemes(contentTypes.themes);
-    const slides = await this.parseSlides([contentTypes.slides[2]]);
+    const slides = await this.parseSlides([contentTypes.slides[1]]);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
     return this.store;
   }
@@ -195,7 +195,7 @@ class OOXMLParser {
 
       i.child('themeElements')
         ?.child('clrScheme')
-        ?.children.forEach((j: XmlNode) => (schemeClr[j.name] = parseColor(j, this)));
+        ?.children.forEach((j: XmlNode) => (schemeClr[j.name] = parseColor(j, this, { schemeToRgba: false })));
 
       return { schemeClr } as Theme;
     });

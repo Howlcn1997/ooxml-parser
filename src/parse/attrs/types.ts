@@ -5,18 +5,18 @@ export type Scheme =
   | 'accent4'
   | 'accent5'
   | 'accent6'
-  | 'bg1'
-  | 'bg2'
   | 'folHlink'
-  | 'folHyperlink'
   | 'hlink'
-  | 'hyperlink'
   | 'dk1'
   | 'dk2'
   | 'lt1'
   | 'lt2'
-  | 'tx1'
-  | 'tx2';
+  | 'tx1' // dk1
+  | 'tx2' // dk2
+  | 'bg1' // lt1
+  | 'bg2'; // lt2
+
+export type System = 'windowText' | 'window' | 'highlight' | 'highlightText';
 
 export interface Color {
   // css中的opacity为 不透明度, transparency = 100% - opacity
