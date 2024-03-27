@@ -18,3 +18,7 @@ export function emusToCm(emus: number, handler?: (cm: number) => number): number
 export function dxaToPt(emus: number, handler?: (pt: number) => number) {
   return handler ? handler(emus / 20) : emus / 20;
 }
+
+export function angleToDegrees(angle: string): number {
+  return Math.round(+angle / 60000);
+}

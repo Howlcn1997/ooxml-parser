@@ -90,7 +90,7 @@ class OOXMLParser {
     await this.parseSlideMasters(contentTypes.slideMasters);
     await this.parseSlideLayouts(contentTypes.slideLayouts);
     await this.parseThemes(contentTypes.themes);
-    await this.parseSlides([contentTypes.slides[1]]);
+    await this.parseSlides(contentTypes.slides);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
     return this.store;
   }

@@ -46,10 +46,15 @@ export function parseColor(prNode: XmlNode, parser: OOXMLParser, opts?: ParseCol
   return { rgba: { r: 0, g: 0, b: 0, a: 1 } };
 }
 
-function getTransform(node: XmlNode): ColorTransform | undefined {
-  const lumMod = node.child('lumMod')?.attrs.val;
-  const lumOff = node.child('lumOff')?.attrs.val;
-  if (lumMod || lumOff) return { lumMod, lumOff };
+function getTransform(node: XmlNode): ColorTransform {
+  const result: ColorTransform = {};
+  let lumMod = node.child('lumMod')?.attrs.val;
+  let lumOff = node.child('lumOff')?.attrs.val;
+
+  if (lumMod) result.lumMod = +lumMod / 1000;
+  if (lumOff) result.lumOff = +lumOff / 1000;
+
+  return result;
 }
 
 function getScheme(node: XmlNode): { scheme?: Scheme; system?: System; rgba?: Rgba } {
