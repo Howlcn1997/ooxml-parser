@@ -12,7 +12,7 @@ export class XmlNode {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _attrs: Record<string, any> = {};
   private _children: XmlNode[] = [];
-  private _cache: Record<string, XmlNode[]> = new Map([]);
+  // private _cache: Record<string, XmlNode[]> = new Map([]);
 
   constructor(node: Element, parent?: XmlNode, config?: Config) {
     this.tag = node.nodeName;

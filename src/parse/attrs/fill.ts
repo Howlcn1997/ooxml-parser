@@ -13,7 +13,7 @@ export async function parseFill(elementPr: XmlNode, parser: OOXMLParser): Promis
         };
       case 'gradFill':
         return await parseGradientFill(child, parser);
-      case 'blipFill':
+      case 'picFill':
         return {
           type: 'pic',
           value: 'picture',
@@ -45,7 +45,7 @@ export async function parseGradientFill(node: XmlNode, parser: OOXMLParser): Pro
       pos: +i.attrs.pos,
       color: parseColor(i, parser),
     }));
-  console.log(node._node);
+  // console.log(node._node);
 
   return { type: 'gradient', value: { type: gradientType, gsList } } as GradientFill;
 }

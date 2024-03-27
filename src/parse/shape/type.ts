@@ -37,8 +37,10 @@ interface Pos {
   left: number;
 }
 
-export interface Shape extends Element {}
+export interface Shape extends BaseElement {}
 
-export interface Pic extends Element {}
+export interface Pic extends BaseElement {}
 
-export interface Group extends Element {}
+export interface Group extends BaseElement {}
+
+export type Element = Shape | Pic | Group;

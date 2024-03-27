@@ -86,11 +86,11 @@ class OOXMLParser {
   async parse(file: File) {
     this.zip = this.zip || (await this.loadFile(file));
     const contentTypes = await this.parseContentTypes();
-    const presentation = await this.parsePresentation();
+    await this.parsePresentation();
     await this.parseSlideMasters(contentTypes.slideMasters);
     await this.parseSlideLayouts(contentTypes.slideLayouts);
     await this.parseThemes(contentTypes.themes);
-    const slides = await this.parseSlides([contentTypes.slides[1]]);
+    await this.parseSlides([contentTypes.slides[1]]);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
     return this.store;
   }
@@ -209,16 +209,16 @@ class OOXMLParser {
    */
   async parseSlideLayouts(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
-    for (const path of paths) {
-      const slideLayouts = await this.readXmlFile(path);
-    }
+    // for (const path of paths) {
+    //   const slideLayouts = await this.readXmlFile(path);
+    // }
   }
 
   async parseSlideMasters(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
-    for (const path of paths) {
-      const slideMaster = await this.readXmlFile(path);
-    }
+    // for (const path of paths) {
+    //   const slideMaster = await this.readXmlFile(path);
+    // }
   }
 
   async parseSlides(paths: string[]) {
