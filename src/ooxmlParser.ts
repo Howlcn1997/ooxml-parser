@@ -2,33 +2,26 @@ import JSZip from 'jszip';
 // import { saveAs } from 'file-saver';
 
 import { loadNodeModule, runtimeEnv } from '@/utils/env';
-import { ContentTypes, Presentation, Theme } from '@/types';
+import { ContentTypes, Presentation, StoreRelsMap, Theme } from '@/types';
 import { readXmlFile } from '@/readXmlFile';
 import { XmlNode } from '@/xmlNode';
 import { Color } from '@/parse/attrs/types';
 import { parseColor } from '@/parse/attrs/color';
 import parseSlide from '@/parse/slide/slide';
-import imageHandler from '@/handlers/imageHandler';
-import audioHandler from '@/handlers/audioHandler';
-import videoHandler from '@/handlers/videoHandler';
 import fontHandler from '@/handlers/fontHandler';
-import embedHandler from '@/handlers/embedHandler';
+import embedTransformer from '@/handlers/embedTransformer';
+import { parseRelsByOriginPath } from './parse/slide/rels';
+import { Rels } from './parse/slide/types';
 
 interface ParserConfig {
   // 自定义长度处理器
   lengthHandler: (pt: number) => number;
   // 自定义字体大小处理器
   fontSizeHandler: (pt: number) => number;
-  // 自定义图片媒体(png,gif,etc)资源处理器
-  imageHandler: (file: File) => Promise<string>;
-  // 自定义音频(mp3,wav,etc)资源处理器
-  audioHandler: (file: File) => Promise<string>;
-  // 自定义视频(mp4,avi,etc)资源处理器
-  videoHandler: (file: File) => Promise<string>;
   // 自定义字体(ttf,woff,etc)处理器
   fontHandler: (file: File) => Promise<string>;
-  // 自定义嵌入内容(Excel,Word)处理器
-  embedHandler: (file: File) => Promise<string>;
+  // 自定义嵌入内容(Excel,Word,image,video,audio,...)处理器
+  embedTransformer: (type: string, zip: JSZip.JSZipObject) => Promise<string>;
 }
 
 interface Store {
@@ -45,14 +38,12 @@ class OOXMLParser {
   config: ParserConfig = {
     lengthHandler: pt => (pt / 3) * 4,
     fontSizeHandler: pt => (pt / 3) * 4,
-    imageHandler,
-    audioHandler,
-    videoHandler,
     fontHandler,
-    embedHandler,
+    embedTransformer,
   };
 
-  private _fileCache: Record<string, any> = new Map<string, any>([]);
+  private _relsCache = new Map<string, Rels>([]);
+  private _fileCache = new Map<string, any>([]);
 
   constructor(config?: Partial<ParserConfig>) {
     this.config = { ...this.config, ...config };
@@ -83,14 +74,21 @@ class OOXMLParser {
     return theFile;
   }
 
+  async readFile(path: string): Promise<JSZip.JSZipObject | null> {
+    if (!this.zip) throw new Error('No zip file loaded, please loadFile first');
+    return await this.zip.file(path);
+  }
+
   async parse(file: File) {
     this.zip = this.zip || (await this.loadFile(file));
-    const contentTypes = await this.parseContentTypes();
     await this.parsePresentation();
+    const contentTypes = await this.parseContentTypes();
+    console.log(contentTypes);
+    await this.parseThemes(contentTypes.themes);
     await this.parseSlideMasters(contentTypes.slideMasters);
     await this.parseSlideLayouts(contentTypes.slideLayouts);
-    await this.parseThemes(contentTypes.themes);
     await this.parseSlides(contentTypes.slides);
+    // await this.parseSlides([contentTypes.slides[4]]);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
     return this.store;
   }
@@ -147,6 +145,28 @@ class OOXMLParser {
       const r2 = n2 ? parseInt(n2) : 0;
       return r1 - r2;
     }
+  }
+
+  async getSlideRels(slidePath: string, scope: 'master' | 'layout' | 'slide' = 'slide'): Promise<Rels> {
+    const cacheKey = `${scope}::${slidePath}`;
+    if (this._relsCache.has(cacheKey)) return this._relsCache.get(cacheKey) as Rels;
+
+    const slideNumber = (slidePath.split('/').pop() as string).match(/\d+/);
+
+    const targetRelsPath = {
+      master: `ppt/slideMasters/_rels/slideMaster${slideNumber}.xml.rels`,
+      layout: `ppt/slideLayouts/_rels/slideLayout${slideNumber}.xml.rels`,
+      slide: `ppt/slides/_rels/slide${slideNumber}.xml.rels`,
+    }[scope];
+
+    const relsFile = await this.readXmlFile(targetRelsPath);
+    return relsFile.children.reduce((rels, i) => {
+      rels[i.attrs.Id] = {
+        type: i.attrs.Type.split('/').pop(),
+        target: i.attrs.Target.replace('..', 'ppt'),
+      };
+      return rels;
+    }, {} as Rels);
   }
 
   /**

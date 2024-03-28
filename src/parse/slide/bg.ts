@@ -1,6 +1,5 @@
 import { parseFill } from '@/parse/attrs/fill';
 import { Background, Rel } from '@/parse/slide/types';
-import { parseRelsBySlidePath } from '@/parse/slide/rels';
 import OOXMLParser from '@/ooxmlParser';
 import { XmlNode } from '@/xmlNode';
 /**
@@ -12,15 +11,14 @@ export default async function parseSlideBackground(slidePath: string, parser: OO
 
   if (slideBg) return await parseFill(slideBg.child('bgPr') as XmlNode, parser);
 
-  const rels: Rel[] = await parseRelsBySlidePath(slidePath, parser);
-  const relSlideLayout = rels.find(i => i.type === 'slideLayout');
+  const relLayout = Object.values(await parser.getSlideRels(slidePath, 'layout')).find(i => i.type === 'slideLayout');
+  const relMaster = Object.values(await parser.getSlideRels(slidePath, 'layout')).find(i => i.type === 'slideMaster');
 
-  if (!relSlideLayout) return null;
+  if (!relLayout && !relMaster) return null;
+  const relXmlFile = await parser.readXmlFile(((relLayout as Rel) || (relMaster as Rel)).target);
+  const bg = relXmlFile.child('cSld')?.child('bg');
 
-  const slideLayout = await parser.readXmlFile(relSlideLayout.target);
-  const slideLayoutBg = slideLayout.child('cSld')?.child('bg');
-
-  if (slideLayoutBg) return await parseFill(slideLayoutBg.child('bgPr') as XmlNode, parser);
+  if (bg) return await parseFill(bg.child('bgPr') as XmlNode, parser);
 
   return null;
 }

@@ -15,7 +15,6 @@ import { Line } from '../attrs/types';
 
 export interface BaseElement {
   type: string;
-  name?: string;
   fill?: Fill;
   line?: Line;
   size?: Size;

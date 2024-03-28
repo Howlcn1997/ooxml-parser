@@ -2,29 +2,22 @@ import { XmlNode } from '@/xmlNode';
 import { parseColor } from '@/parse/attrs/color';
 import { Color } from '@/parse/attrs/types';
 import OOXMLParser from '@/ooxmlParser';
-import { angleToDegrees } from './unit';
+import { angleToDegrees } from '../../utils/unit';
 
 export async function parseFill(elementPr: XmlNode, parser: OOXMLParser): Promise<Fill> {
+  // console.log(elementPr._node);
   for (const child of elementPr.children) {
     switch (child.name) {
       case 'solidFill':
         return parseSolidFill(child, parser);
       case 'gradFill':
         return await parseGradientFill(child, parser);
-      case 'picFill':
-        return {
-          type: 'pic',
-          value: 'picture',
-        } as Fill;
+      case 'blipFill':
+        return await parseBlipFill(child, parser);
       case 'patternFill':
         return {
           type: 'pattern',
           value: 'pattern',
-        } as Fill;
-      case 'blipFill':
-        return {
-          type: 'blip',
-          value: 'blip',
         } as Fill;
       case 'noFill':
         return { type: 'noFill' };
@@ -43,10 +36,7 @@ export function parseSolidFill(node: XmlNode, parser: OOXMLParser): SolidFill {
 
 export async function parseGradientFill(node: XmlNode, parser: OOXMLParser): Promise<GradientFill> {
   const gsNodes = node.child('gsLst')?.allChild('gs') as XmlNode[];
-  const gradientStopList = gsNodes.map(i => ({
-    pos: +i.attrs.pos / 1000,
-    color: parseColor(i, parser),
-  })) as GradientStop[];
+  const gradientStopList = gsNodes.map(i => ({ pos: +i.attrs.pos / 1000, color: parseColor(i, parser) }));
 
   const linear = node.child('lin');
   if (linear)
@@ -82,20 +72,36 @@ export async function parseGradientFill(node: XmlNode, parser: OOXMLParser): Pro
 
   switch (gradientType) {
     case 'rect':
-      return { type: 'gradient', value: { type: 'rect', gsList: gradientStopList, origin } } as GradientFill;
+      return { type: 'gradient', value: { type: 'rect', gsList: gradientStopList, origin } };
     case 'circle':
-      return { type: 'gradient', value: { type: 'radial', gsList: gradientStopList, origin } } as GradientFill;
+      return { type: 'gradient', value: { type: 'radial', gsList: gradientStopList, origin } };
   }
-  return { type: 'gradient', value: { type: 'path', gsList: gradientStopList, origin } } as GradientFill;
+  return { type: 'gradient', value: { type: 'path', gsList: gradientStopList, origin } };
 }
 
-export function parsePicFill() {}
-
+// 图案
 export function parsePatternFill() {}
+// 图片或纹理
+export async function parseBlipFill(node: XmlNode, parser: OOXMLParser): Promise<BlipFill> {
+  const blip = node.child('blip');
+  const rId = blip?.attrs['r:embed'];
+  // const embed = resource.rels[rId];
 
-export function parseBlipFill() {}
+  // if (!embed) {
+  //   return {
+  //     type: 'blip',
+  //     value: null,
+  //   };
+  // }
+  // const result = await parser.config.embedTransformer(
+  //   embed.type,
+  //   (await parser.readFile(embed.target)) as JSZip.JSZipObject
+  // );
 
-export type Fill = NoFill | SolidFill | GradientFill | PicFill | PatternFill | BlipFill;
+  // console.log(embed.type, embed.target, result);
+}
+
+export type Fill = NoFill | SolidFill | GradientFill | PatternFill | BlipFill;
 
 type NoFill = { type: 'noFill' };
 
@@ -114,18 +120,13 @@ export interface GradientFill {
   value: { type: GradientFillType; gsList: GradientStop[]; angle?: number; origin?: { top: number; left: number } };
 }
 
-export interface PicFill {
-  type: 'pic';
-  value: any; // base64 | url | file
-}
-
-// 纹理填充
+// 图案填充
 export interface PatternFill {
   type: 'pattern';
   value: any;
 }
 
-// 图案填充
+// 图片或纹理填充
 export interface BlipFill {
   type: 'blip';
   value: any;

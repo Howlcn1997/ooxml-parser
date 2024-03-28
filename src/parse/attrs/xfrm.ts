@@ -1,6 +1,6 @@
 import OOXMLParser from '@/ooxmlParser';
 import { XmlNode } from '@/xmlNode';
-import { emusToPt } from './unit';
+import { emusToPt } from '../../utils/unit';
 
 /**
  * doc:

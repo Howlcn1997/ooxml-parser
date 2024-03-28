@@ -1,31 +1,19 @@
-import { XmlNode } from '@/xmlNode';
 import OOXMLParser from '@/ooxmlParser';
-import { Rel, SlideType } from '@/parse/slide/types';
+import { Rels } from '@/parse/slide/types';
 
-export async function parseRels(path: string, parser: OOXMLParser): Promise<Rel[]> {
+export async function parseRels(path: string, parser: OOXMLParser): Promise<Rels> {
   const relsFile = await parser.readXmlFile(path);
-
-  return relsFile.children.map((i: XmlNode) => ({
-    type: i.attrs.Type.split('/').pop(),
-    target: i.attrs.Target.replace('..', 'ppt'),
-  }));
+  return relsFile.children.reduce((rels, i) => {
+    rels[i.attrs.Id] = {
+      type: i.attrs.Type.split('/').pop(),
+      target: i.attrs.Target.replace('..', 'ppt'),
+    };
+    return rels;
+  }, {} as Rels);
 }
 
-export function parseRelsBySlideName(name: string, parser: OOXMLParser, slideType: SlideType = SlideType.Slide) {
-  return parseRels(`ppt/${slideType}s/_rels/${name}.rels`, parser);
+export async function parseRelsByOriginPath(path: string, parser: OOXMLParser) {
+  const filename = path.split('/').pop() as string; // 'slide1.xml'
+  const fileType = filename.replace(/\d+\.xml/, '');
+  return await parseRels(`ppt/${fileType}s/_rels/${filename}.rels`, parser);
 }
-
-export async function parseRelsBySlidePath(path: string, parser: OOXMLParser, slideType?: SlideType) {
-  const slideFilename = path.split('/').pop() as string; // 'slide1.xml'
-  return parseRelsBySlideName(slideFilename, parser, slideType);
-}
-
-export function handleRel(rels: Rel[], type: string) {
-  return rels.find(i => i.type === type)?.target;
-}
-
-export function handleImageRel(rels: Rel[]) {
-  return handleRel(rels, 'image');
-}
-
-export function handleSlideLayoutRel(rels: Rel[]) {}

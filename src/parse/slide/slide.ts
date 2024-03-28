@@ -1,22 +1,18 @@
 import OOXMLParser from '@/ooxmlParser';
 import parseSlideBackground from '@/parse/slide/bg';
-import { parseRelsBySlidePath } from '@/parse/slide/rels';
-import { Slide } from '@/parse/slide/types';
+// import { Slide } from '@/parse/slide/types';
 import { XmlNode } from '@/xmlNode';
 import parseShape from '@/parse/shape';
+import { Background } from './types';
 
-export default async function parseSlide(path: string, parser: OOXMLParser): Promise<Slide> {
-  const result: Record<string, any> = {};
-
+export default async function parseSlide(path: string, parser: OOXMLParser) {
   // slide图层层级关系: (slide.bg | slideLayout.bg) < slideLayout.spTree < slide.spTree
 
   // 背景
-  result.background = await parseSlideBackground(path, parser);
-  // 关联资源: 媒体资源 板式资源
-  result.rels = await parseRelsBySlidePath(path, parser);
+  const background = await parseSlideBackground(path, parser);
   // 元素
   const slide = await parser.readXmlFile(path);
-  result.elements = (
+  const elements = (
     await Promise.all(
       slide
         .child('cSld')
@@ -25,5 +21,30 @@ export default async function parseSlide(path: string, parser: OOXMLParser): Pro
     )
   )?.filter(Boolean);
 
-  return result as Slide;
+  return { background, elements };
+}
+
+export  class Slide {
+  path: string;
+  parser: OOXMLParser;
+  background?: Background;
+
+  constructor(path: string, parser: OOXMLParser) {
+    this.path = path;
+    this.parser = parser;
+  }
+  async parse() {
+    // 背景
+    this.background = await parseSlideBackground(this.path, this.parser);
+    // 元素
+    const slide = await this.parser.readXmlFile(this.path);
+    const elements = (
+      await Promise.all(
+        slide
+          .child('cSld')
+          ?.child('spTree')
+          ?.children?.map((i: XmlNode) => parseShape(i, this.parser)) || []
+      )
+    )?.filter(Boolean);
+  }
 }

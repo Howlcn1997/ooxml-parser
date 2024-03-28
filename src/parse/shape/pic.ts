@@ -1,10 +1,15 @@
 import OOXMLParser from '@/ooxmlParser';
 import { XmlNode } from '@/xmlNode';
+import parseXfrm from '@/parse/attrs/xfrm';
+import { parseFill } from '../attrs/fill';
 
-export default function parse(shape: XmlNode, parse: OOXMLParser) {
-  const nonVisualProp = shape.child('nvPicPr');
+export default async function parse(shape: XmlNode, parser: OOXMLParser) {
+  const { flipV, flipH, left, top, width, height } = await parseXfrm(shape, parser);
+  const fill = await parseFill(shape, parser);
   return {
     type: 'pic',
-    name: nonVisualProp?.child('cNvPr')?.attrs.name,
+    fill,
+    pos: { left, top },
+    size: { width, height, flipV, flipH },
   };
 }
