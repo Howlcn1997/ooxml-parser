@@ -1,17 +1,19 @@
 import JSZip from 'jszip';
-// import { saveAs } from 'file-saver';
-
 import { loadNodeModule, runtimeEnv } from '@/utils/env';
-import { ContentTypes, Presentation, StoreRelsMap, Theme } from '@/types';
+import { ContentTypes, Presentation, Theme } from '@/types';
 import { readXmlFile } from '@/readXmlFile';
 import { XmlNode } from '@/xmlNode';
-import { Color } from '@/parse/attrs/types';
-import { parseColor } from '@/parse/attrs/color';
-import parseSlide from '@/parse/slide/slide';
 import fontHandler from '@/handlers/fontHandler';
 import embedTransformer from '@/handlers/embedTransformer';
-import { parseRelsByOriginPath } from './parse/slide/rels';
+
+import { parseColor } from './parse/attrs/color';
+import { Color } from './parse/attrs/types';
+
 import { Rels } from './parse/slide/types';
+import parseSlide from './parse/slide/master';
+import parseMaster from './parse/slide/master';
+import parseLayout from './parse/slide/layout';
+import { ptToCm } from './utils/unit';
 
 interface ParserConfig {
   // 自定义长度处理器
@@ -21,7 +23,7 @@ interface ParserConfig {
   // 自定义字体(ttf,woff,etc)处理器
   fontHandler: (file: File) => Promise<string>;
   // 自定义嵌入内容(Excel,Word,image,video,audio,...)处理器
-  embedTransformer: (type: string, zip: JSZip.JSZipObject) => Promise<string>;
+  embedTransformer: (type: string, embedPath: string, zip: JSZip.JSZipObject) => Promise<string>;
 }
 
 interface Store {
@@ -29,24 +31,29 @@ interface Store {
   presentation?: Presentation;
   themes?: Theme[];
   slides?: any[];
+  layouts?: any[];
+  masters?: any[];
 }
 
 class OOXMLParser {
   zip: JSZip | undefined;
   store: Map<keyof Store, any> = new Map<keyof Store, any>([]);
 
-  config: ParserConfig = {
-    lengthHandler: pt => (pt / 3) * 4,
-    fontSizeHandler: pt => (pt / 3) * 4,
+  config: ParserConfig;
+  defaultConfig: ParserConfig = {
+    lengthHandler: pt => Math.round((ptToCm(pt) + Number.EPSILON) * 100) / 100,
+    fontSizeHandler: pt => pt,
     fontHandler,
     embedTransformer,
   };
+
+
 
   private _relsCache = new Map<string, Rels>([]);
   private _fileCache = new Map<string, any>([]);
 
   constructor(config?: Partial<ParserConfig>) {
-    this.config = { ...this.config, ...config };
+    this.config = { ...this.defaultConfig, ...config };
   }
 
   async loadFile(file: File): Promise<JSZip> {
@@ -83,13 +90,11 @@ class OOXMLParser {
     this.zip = this.zip || (await this.loadFile(file));
     await this.parsePresentation();
     const contentTypes = await this.parseContentTypes();
-    console.log(contentTypes);
     await this.parseThemes(contentTypes.themes);
-    await this.parseSlideMasters(contentTypes.slideMasters);
-    await this.parseSlideLayouts(contentTypes.slideLayouts);
-    await this.parseSlides(contentTypes.slides);
-    // await this.parseSlides([contentTypes.slides[4]]);
+    // await this.parseSlideMasters(contentTypes.slideMasters);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
+    // await this.parseSlides(contentTypes.slides);
+    await this.parseSlides([contentTypes.slides[6]]);
     return this.store;
   }
 
@@ -205,7 +210,9 @@ class OOXMLParser {
 
     return result;
   }
-
+  /**
+   * 主题
+   */
   async parseThemes(paths: string[]): Promise<Theme[]> {
     if (this.store.has('themes')) return this.store.get('themes');
 
@@ -229,24 +236,40 @@ class OOXMLParser {
    */
   async parseSlideLayouts(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
-    // for (const path of paths) {
-    //   const slideLayouts = await this.readXmlFile(path);
-    // }
+    if (this.store.has('layouts')) return this.store.get('layouts');
+    const layouts = await Promise.all(paths.map(async layoutPath => await parseLayout(layoutPath, this)));
+    this.store.set('layouts', layouts);
+    return layouts;
   }
-
+  /**
+   * 母版
+   */
   async parseSlideMasters(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
-    // for (const path of paths) {
-    //   const slideMaster = await this.readXmlFile(path);
-    // }
+    if (this.store.has('masters')) return this.store.get('masters');
+    const masters = await Promise.all(paths.map(async masterPath => await parseMaster(masterPath, this)));
+    this.store.set('masters', masters);
+    return masters;
   }
-
+  /**
+   * 幻灯片
+   */
   async parseSlides(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
     if (this.store.has('slides')) return this.store.get('slides');
-    const slides = await Promise.all(paths.map(async i => await parseSlide(i, this)));
+    const slides = await Promise.all(paths.map(async sldPath => await parseSlide(sldPath, this)));
     this.store.set('slides', slides);
     return slides;
+  }
+
+  async allXmlFile() {
+    if (!this.zip) throw new Error('No zip file loaded');
+    const _zipFiles = { ...this.zip.files } as Record<string, any>;
+    const filePaths = Object.keys(_zipFiles);
+    for (const path of filePaths) {
+      _zipFiles[path] = ((await this.readXmlFile(path)) as any)._node;
+    }
+    return _zipFiles;
   }
 }
 

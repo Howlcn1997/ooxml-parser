@@ -3,16 +3,17 @@ import { XmlNode } from '@/xmlNode';
 
 import parseXfrm from '@/parse/attrs/xfrm';
 import { parseFill } from '@/parse/attrs/fill';
-import { BaseElement } from './type';
+import { Shape } from './type';
 
-export default async function parse(shape: XmlNode, parser: OOXMLParser): Promise<BaseElement> {
+export default async function parse(shape: XmlNode, sldPath: string, parser: OOXMLParser): Promise<Shape> {
   const { flipV, flipH, left, top, width, height } = await parseXfrm(shape, parser);
-  const fill = await parseFill(shape.child('spPr') as XmlNode, parser);
+  const fill = await parseFill(shape.child('spPr') as XmlNode, sldPath, parser);
 
   return {
     type: 'shape',
+    flipH,
+    flipV,
     fill,
-    pos: { left, top },
-    size: { width, height, flipV, flipH },
+    dimension: { width, height, left, top },
   };
 }

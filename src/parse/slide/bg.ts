@@ -7,9 +7,9 @@ import { XmlNode } from '@/xmlNode';
  */
 export default async function parseSlideBackground(slidePath: string, parser: OOXMLParser): Promise<Background> {
   const slide = await parser.readXmlFile(slidePath);
-  const slideBg = slide.child('cSld')?.child('bg');
+  const slideBgPr = slide.child('cSld')?.child('bg')?.child('bgPr');
 
-  if (slideBg) return await parseFill(slideBg.child('bgPr') as XmlNode, parser);
+  if (slideBgPr) return await parseFill(slideBgPr as XmlNode, slidePath, parser);
 
   const relLayout = Object.values(await parser.getSlideRels(slidePath, 'layout')).find(i => i.type === 'slideLayout');
   const relMaster = Object.values(await parser.getSlideRels(slidePath, 'layout')).find(i => i.type === 'slideMaster');
@@ -17,8 +17,10 @@ export default async function parseSlideBackground(slidePath: string, parser: OO
   if (!relLayout && !relMaster) return null;
   const relXmlFile = await parser.readXmlFile(((relLayout as Rel) || (relMaster as Rel)).target);
   const bg = relXmlFile.child('cSld')?.child('bg');
+  const bgPr = bg?.child('bgPr');
+  const bgRef = bg?.child('bgRef');
 
-  if (bg) return await parseFill(bg.child('bgPr') as XmlNode, parser);
+  if (bgPr || bgRef) return await parseFill((bgPr || bgRef) as XmlNode, slidePath, parser);
 
   return null;
 }

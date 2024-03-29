@@ -19,6 +19,20 @@ export function dxaToPt(emus: number, handler?: (pt: number) => number) {
   return handler ? handler(emus / 20) : emus / 20;
 }
 
+export function ptToCm(pt: number, handler?: (cm: number) => number) {
+  return handler ? handler(pt * 2.54 / 72) : pt * 2.54 / 72;
+}
+
 export function angleToDegrees(angle: string): number {
   return Math.round(+angle / 60000);
+}
+
+export type Percentage = number; // [0, 1] 0% - 100%
+
+export function emusAlphaToOpacity(alpha: number): Percentage {
+  return 1 - alpha / 100000;
+}
+
+export function emusToPercentage(emus: number): Percentage {
+  return emus / 100000;
 }

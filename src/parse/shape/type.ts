@@ -15,25 +15,22 @@ import { Line } from '../attrs/types';
 
 export interface BaseElement {
   type: string;
+  // 水平翻转
+  flipH?: boolean;
+  // 垂直翻转
+  flipV?: boolean;
+  // 旋转角度
+  rotate?: number;
   fill?: Fill;
   line?: Line;
-  size?: Size;
-  pos?: Pos;
+  dimension?: Dimension;
 }
 
-interface Size {
+interface Dimension {
+  left: number;
+  top: number;
   width: number;
   height: number;
-  rotate?: number;
-  //   // 水平翻转
-  flipH?: boolean;
-  //   // 垂直翻转
-  flipV?: boolean;
-}
-
-interface Pos {
-  top: number;
-  left: number;
 }
 
 export interface Shape extends BaseElement {}

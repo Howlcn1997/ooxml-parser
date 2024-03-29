@@ -2,6 +2,7 @@ import { XmlNode } from '@/xmlNode';
 import { Color, ColorTransform, Rgba, Scheme, System } from '@/parse/attrs/types';
 import tinycolor from 'tinycolor2';
 import OOXMLParser from '@/ooxmlParser';
+import { emusToPercentage } from '@/utils/unit';
 interface ParseColorOptions {
   // 是否将 ColorTransform 合并到 rgba 中
   transformToRgba?: boolean;
@@ -48,11 +49,11 @@ export function parseColor(prNode: XmlNode, parser: OOXMLParser, opts?: ParseCol
 
 function getTransform(node: XmlNode): ColorTransform {
   const result: ColorTransform = {};
-  let lumMod = node.child('lumMod')?.attrs.val;
-  let lumOff = node.child('lumOff')?.attrs.val;
+  const lumMod = node.child('lumMod')?.attrs.val;
+  const lumOff = node.child('lumOff')?.attrs.val;
 
-  if (lumMod) result.lumMod = +lumMod / 1000;
-  if (lumOff) result.lumOff = +lumOff / 1000;
+  if (lumMod) result.lumMod = emusToPercentage(+lumMod);
+  if (lumOff) result.lumOff = emusToPercentage(+lumOff);
 
   return result;
 }
