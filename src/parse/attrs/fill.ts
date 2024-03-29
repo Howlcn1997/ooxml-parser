@@ -136,6 +136,13 @@ export async function parsePicFill(node: XmlNode, sldPath: string, parser: OOXML
 }
 
 // 图案
+/**
+ * 
+ * doc:
+ * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.patternfill?view=openxml-3.0.1
+ * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.presetpatternvalues?view=openxml-3.0.1
+ * - 
+ */
 export async function parsePatternFill(node: XmlNode, sldPath: string, parser: OOXMLParser): Promise<PatternFill> {
   const { prst: preset } = node.attrs;
   const fgClr = node.child('fgClr');
