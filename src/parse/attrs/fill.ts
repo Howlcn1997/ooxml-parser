@@ -4,6 +4,7 @@ import { Color } from '@/parse/attrs/types';
 import OOXMLParser from '@/ooxmlParser';
 import { Percentage, angleToDegrees, emusAlphaToOpacity, emusToPercentage, emusToPt } from '../../utils/unit';
 import JSZip from 'jszip';
+import parseSlideBackground from '../slide/bg';
 
 export async function parseFill(elementPr: XmlNode, sldPath: string, parser: OOXMLParser): Promise<Fill> {
   for (const child of elementPr.children) {
@@ -20,8 +21,13 @@ export async function parseFill(elementPr: XmlNode, sldPath: string, parser: OOX
         return { type: 'noFill' };
     }
   }
-  // 尝试解析默认填充
-  return { type: 'noFill' };
+
+  const useBgFill = elementPr?.parent?.attrs?.useBgFill === '1';
+  const background = useBgFill && (await parseSlideBackground(sldPath, parser));
+  if (background) return background;
+
+  const theme = parser.store.get('theme');
+  return { type: 'solid', value: { ...theme.schemeClr.accent1, scheme: 'accent1' } };
 }
 
 export function parseSolidFill(node: XmlNode, parser: OOXMLParser): SolidFill {

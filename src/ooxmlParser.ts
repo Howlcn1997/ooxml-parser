@@ -29,6 +29,7 @@ interface ParserConfig {
 interface Store {
   contentTypes?: ContentTypes;
   presentation?: Presentation;
+  theme?: Theme;
   themes?: Theme[];
   slides?: any[];
   layouts?: any[];
@@ -91,10 +92,11 @@ class OOXMLParser {
     await this.parsePresentation();
     const contentTypes = await this.parseContentTypes();
     await this.parseThemes(contentTypes.themes);
+    this.store.set('theme', this.store.get('themes')[0]);
     // await this.parseSlideMasters(contentTypes.slideMasters);
     // await this.parseSlideLayouts(contentTypes.slideLayouts);
     // await this.parseSlides(contentTypes.slides);
-    await this.parseSlides([contentTypes.slides[6]]);
+    await this.parseSlides([contentTypes.slides[1]]);
     return this.store;
   }
 

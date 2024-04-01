@@ -8,6 +8,8 @@ interface ParseColorOptions {
   transformToRgba?: boolean;
   // 是否将 Scheme 通过 Theme 转换为 rgba
   schemeToRgba?: boolean;
+  // schemeClr 颜色对应关系
+  clrMap?: Record<string, string>;
 }
 const defaultOptions: ParseColorOptions = { transformToRgba: true, schemeToRgba: true };
 
@@ -37,7 +39,7 @@ export function parseColor(prNode: XmlNode, parser: OOXMLParser, opts?: ParseCol
     if (rgba) return { ...color, rgba };
 
     if (scheme && options?.schemeToRgba) {
-      color.rgba = schemeClr(scheme, parser);
+      color.rgba = schemeClr(scheme, parser, defaultOptions.clrMap);
     } else {
       color.rgba = tinycolor(`#${child.attrs.val}`).setAlpha(alpha).toRgb();
     }
@@ -64,20 +66,30 @@ function getScheme(node: XmlNode): { scheme?: Scheme; system?: System; rgba?: Rg
   return {};
 }
 
-function schemeClr(scheme: Scheme, parser: OOXMLParser): Rgba {
-  const currentThemeIndex = 0;
-  const themes = parser.store.get('themes');
-  if (!themes) throw new Error('No themes loaded');
+function schemeClr(scheme: Scheme, parser: OOXMLParser, clrMap?: Record<string, string>): Rgba {
+  const theme = parser.store.get('theme');
+  if (!theme) throw new Error('No theme loaded');
+  clrMap = clrMap || {
+    accent1: 'accent1',
+    accent2: 'accent2',
+    accent3: 'accent3',
+    accent4: 'accent4',
+    accent5: 'accent5',
+    accent6: 'accent6',
+    folHlink: 'folHlink',
+    hlink: 'hlink',
+    dk1: 'dk1',
+    dk2: 'dk2',
+    lt1: 'lt1',
+    lt2: 'lt2',
+    tx1: 'dk1', // dk1
+    tx2: 'dk2', // dk2
+    bg1: 'lt1', // lt1
+    bg2: 'lt2', // lt2
+  };
+  scheme = (clrMap[scheme as string] || scheme) as Scheme;
 
-  const targetTheme = themes[currentThemeIndex];
-  scheme = ({
-    tx1: 'dk1',
-    tx2: 'dk2',
-    bg1: 'lt1',
-    bg2: 'lt2',
-  }[scheme as string] || scheme) as Scheme;
-
-  const schemeColor = targetTheme.schemeClr[scheme] as Color;
+  const schemeColor = theme.schemeClr[scheme] as Color;
 
   // TODO: 转换系统颜色
   // const systemColor = {
