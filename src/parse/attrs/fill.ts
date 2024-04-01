@@ -135,24 +135,29 @@ export async function parsePicFill(node: XmlNode, sldPath: string, parser: OOXML
   }
 }
 
-// 图案
 /**
- * 
+ * 图案
+ * 图案处理成PicFill的形式
  * doc:
  * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.patternfill?view=openxml-3.0.1
  * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.presetpatternvalues?view=openxml-3.0.1
- * - 
+ * -
  */
 export async function parsePatternFill(node: XmlNode, sldPath: string, parser: OOXMLParser): Promise<PatternFill> {
-  const { prst: preset } = node.attrs;
-  const fgClr = node.child('fgClr');
-  const bgClr = node.child('bgClr');
+  const value: Record<string, any> = {};
+
+  value.rotateWithShape = node.attrs.rotWithShape === '1';
+  value.preset = node.attrs.prst;
+  // 前景色
+  value.foregroundClr = parseColor(node.child('fgClr') as XmlNode, parser);
+  // 背景色
+  value.backgroundClr = parseColor(node.child('bgClr') as XmlNode, parser);
+  // 处理成图片的图案
+  value.url = '';
   return {
     type: 'pattern',
-    value: {
-      preset,
-    },
-  } as PatternFill;
+    value: value as PatternFill['value'],
+  };
 }
 
 // ============== tools ================
@@ -187,8 +192,11 @@ export interface GradientFill {
 export interface PatternFill {
   type: 'pattern';
   value: {
-    rotateWithShape: boolean;
     preset: string;
+    rotateWithShape: boolean;
+    foregroundClr: Color;
+    backgroundClr: Color;
+    url?: string;
   };
 }
 

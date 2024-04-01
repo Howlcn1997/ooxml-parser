@@ -7,7 +7,7 @@ export class XmlNode {
   name: string;
   parent: XmlNode | null = null;
   namespace: string | null = null;
-  config: Config;
+  _config: Config;
   private _node: Element;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _attrs: Record<string, any> = {};
@@ -22,13 +22,13 @@ export class XmlNode {
     this.namespace = name ? namespace : '';
 
     this._node = node;
-    this.config = { cacheEnabled: true, ...(config || {}) };
+    this._config = { cacheEnabled: true, ...(config || {}) };
     this.parent = parent || null;
   }
 
   get children() {
     if (this._children.length) return this._children;
-    this._children = Array.from(this._node.children).map(node => new XmlNode(node, this, this.config));
+    this._children = Array.from(this._node.children).map(node => new XmlNode(node, this, this._config));
     return this._children;
   }
 
