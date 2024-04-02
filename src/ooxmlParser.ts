@@ -106,7 +106,7 @@ class OOXMLParser {
     const contentTypes = await this.contentTypes();
     await this.theme(contentTypes.themes[0]);
     // await this.slides(contentTypes.slides);
-    await this.slides([contentTypes.slides[1]]);
+    await this.slides([contentTypes.slides[7]]);
     return {
       slideSize: presentation.slideSize,
       noteSize: presentation.noteSize,
@@ -179,28 +179,6 @@ class OOXMLParser {
     return this._rels[path];
   }
 
-  async getSlideRels(slidePath: string, scope: 'master' | 'layout' | 'slide' = 'slide'): Promise<Rels> {
-    const cacheKey = `${scope}::${slidePath}`;
-    if (this._relsCache.has(cacheKey)) return this._relsCache.get(cacheKey) as Rels;
-
-    const slideNumber = (slidePath.split('/').pop() as string).match(/\d+/);
-
-    const targetRelsPath = {
-      master: `ppt/slideMasters/_rels/slideMaster${slideNumber}.xml.rels`,
-      layout: `ppt/slideLayouts/_rels/slideLayout${slideNumber}.xml.rels`,
-      slide: `ppt/slides/_rels/slide${slideNumber}.xml.rels`,
-    }[scope];
-
-    const relsFile = await this.readXmlFile(targetRelsPath);
-    return relsFile.children.reduce((rels, i) => {
-      rels[i.attrs.Id] = {
-        type: i.attrs.Type.split('/').pop(),
-        target: i.attrs.Target.replace('..', 'ppt'),
-      };
-      return rels;
-    }, {} as Rels);
-  }
-
   /**
    * doc: https://learn.microsoft.com/en-us/office/open-xml/presentation/structure-of-a-presentationml-document
    */
@@ -250,12 +228,13 @@ class OOXMLParser {
     const themeXmlNode = await this.readXmlFile(path);
     const schemeClr: Record<string, Color> = {};
 
-    themeXmlNode
-      .child('themeElements')
-      ?.child('clrScheme')
-      ?.children.forEach((j: XmlNode) => (schemeClr[j.name] = parseColor(j, this, { schemeToRgba: false })));
+    const children = themeXmlNode.child('themeElements')?.child('clrScheme')?.children;
+    if (!children) return { schemeClr };
 
-    this._themes[path] = schemeClr;
+    for (const child of children) {
+      schemeClr[child.name] = await parseColor(child, null);
+    }
+    this._themes[path] = { schemeClr };
     return this._themes[path];
   }
 
@@ -266,29 +245,27 @@ class OOXMLParser {
   /**
    * 版式
    */
-  async slideLayout(path: string) {
-    if (!this.zip) throw new Error('No zip file loaded');
+  slideLayout(path: string): SlideLayout {
     if (this._slideLayouts[path]) return this._slideLayouts[path];
-    this._slideLayouts[path] = await SlideLayout(path, this);
+    this._slideLayouts[path] = new SlideLayout(path, this);
     return this._slideLayouts[path];
   }
 
-  async slideLayouts(paths: string[]) {
-    return Promise.all(paths.map(path => this.slideLayout(path)));
+  slideLayouts(paths: string[]): SlideLayout[] {
+    return paths.map(path => this.slideLayout(path));
   }
 
   /**
    * 母版
    */
-  async slideMaster(path: string) {
-    if (!this.zip) throw new Error('No zip file loaded');
+  slideMaster(path: string): SlideMaster {
     if (this._slideMasters[path]) return this._slideMasters[path];
-    this._slideMasters[path] = await new SlideMaster(path, this).parse();
+    this._slideMasters[path] = new SlideMaster(path, this);
     return this._slideMasters[path];
   }
 
-  async slideMasters(paths: string[]) {
-    return Promise.all(paths.map(path => this.slideMaster(path)));
+  slideMasters(paths: string[]): SlideMaster[] {
+    return paths.map(path => this.slideMaster(path));
   }
   /**
    * 幻灯片

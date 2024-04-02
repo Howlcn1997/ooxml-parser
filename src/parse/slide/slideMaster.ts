@@ -1,8 +1,8 @@
 import OOXMLParser from '@/ooxmlParser';
-import SlideBase from './slideBase';
+import SlideBase, { SlideType } from './slideBase';
 
 export default class SlideMaster extends SlideBase {
   constructor(sldPath: string, parser: OOXMLParser) {
-    super(sldPath, parser);
+    super(SlideType.SlideMaster, sldPath, parser);
   }
 }

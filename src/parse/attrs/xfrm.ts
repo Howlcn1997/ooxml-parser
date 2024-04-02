@@ -1,5 +1,5 @@
-import OOXMLParser from '@/ooxmlParser';
 import { XmlNode } from '@/xmlNode';
+import SlideBase from '../slide/slideBase';
 
 /**
  * doc:
@@ -7,7 +7,7 @@ import { XmlNode } from '@/xmlNode';
  * -
  * 解析 xfrm 元素
  */
-export default async function parse(shape: XmlNode, parser: OOXMLParser) {
+export default async function parse(shape: XmlNode, slide: SlideBase) {
   const result: Record<string, any> = {};
 
   const xfrm = shape.child('spPr')?.child('xfrm');
@@ -40,7 +40,7 @@ export default async function parse(shape: XmlNode, parser: OOXMLParser) {
     top = (top - parseInt(chOff.y)) * cyRatio + +off.y;
   }
 
-  const lengthHandler = parser.config.lengthHandler;
+  const lengthHandler = slide.parser.config.lengthHandler;
 
   return {
     flipV: flipV === '1',

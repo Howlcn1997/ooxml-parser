@@ -1,27 +1,44 @@
-import { parseFill } from '@/parse/attrs/fill';
-import { Background, Rel } from '@/parse/slide/types';
-import OOXMLParser from '@/ooxmlParser';
+import { Fill, parseFill } from '@/parse/attrs/fill';
+import { Background } from '@/parse/slide/types';
 import { XmlNode } from '@/xmlNode';
 import SlideBase from './slideBase';
+import { parseColor } from '../attrs/color';
 /**
  * 背景获取优先级 slide.bg > slideLayout.bg
  */
-export default async function parseSlideBackground(slide: SlideBase, parser: OOXMLParser): Promise<Background> {
+export default async function parseSlideBackground(slide: SlideBase): Promise<Background> {
   const slideXmlNode = await slide.xmlNode();
-  const slideBgPr = slideXmlNode.child('cSld')?.child('bg')?.child('bgPr');
+  const slideBg = slideXmlNode.child('cSld')?.child('bg');
 
-  if (slideBgPr) return await parseFill(slideBgPr as XmlNode, slide, parser);
+  const slideBgPr = slideBg?.child('bgPr');
+  if (slideBgPr) return await parseFill(slideBgPr as XmlNode, slide);
 
-  const relLayout = Object.values(await slide.rels('layout')).find(i => i.type === 'slideLayout');
-  const relMaster = Object.values(await slide.rels('layout')).find(i => i.type === 'slideMaster');
+  // const slideBgRef = slideBg?.child('bgRef');
+  // if (slideBgRef) return await parseBgRef(slideBgRef as XmlNode, slide);
 
-  if (!relLayout && !relMaster) return null;
-  const relXmlFile = await parser.readXmlFile(((relLayout as Rel) || (relMaster as Rel)).target);
-  const bg = relXmlFile.child('cSld')?.child('bg');
-  const bgPr = bg?.child('bgPr');
-  const bgRef = bg?.child('bgRef');
+  const slideLayout = await slide.layout();
+  if (slideLayout) return slideLayout.background();
 
-  if (bgPr || bgRef) return await parseFill((bgPr || bgRef) as XmlNode, slide, parser);
+  const slideMaster = await slide.master();
+  if (slideMaster) return slideMaster.background();
+
+  const theme = await slide.theme();
+  console.log('theme', theme);
+  return { type: 'solid', value: theme.schemeClr['accent1'] };
+}
+
+/**
+ * doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.presentation.backgroundstylereference?view=openxml-3.0.1
+ */
+export async function parseBgRef(node: XmlNode, slide: SlideBase): Promise<Fill | null> {
+  const idx = +node.attrs.idx;
+  if (idx === 1000 || idx === 0) return null;
+
+  // if (idx > 1000) {
+
+  // }
+  const color = await parseColor(node, slide, { defaultColor: null });
+  if (color) return { type: 'solid', value: color };
 
   return null;
 }

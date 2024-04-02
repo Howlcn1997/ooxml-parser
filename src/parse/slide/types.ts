@@ -9,7 +9,7 @@ export interface Rels {
   [id: string]: Rel;
 }
 
-export type Background = Fill | null;
+export type Background = Fill;
 
 export interface Slide {
   background: Background;

@@ -1,4 +1,3 @@
-import OOXMLParser from '@/ooxmlParser';
 import { XmlNode } from '@/xmlNode';
 
 import spParse from '@/parse/shape/sp';
@@ -7,22 +6,18 @@ import groupParse from '@/parse/shape/group';
 import { Element } from './type';
 import Slide from '../slide/slideBase';
 
-export default async function parseShape(
-  shape: XmlNode,
-  slide: Slide,
-  parser: OOXMLParser
-): Promise<Element | null> {
+export default async function parseShape(shape: XmlNode, slide: Slide): Promise<Element | null> {
   switch (shape.name) {
     // case 'nvGrpSpPr':
     //   return null;
     // case 'grpSpPr':
     //   return null;
     case 'sp':
-      return await spParse(shape, slide, parser);
+      return await spParse(shape, slide);
     case 'pic':
-      return await picParse(shape, slide, parser);
+      return await picParse(shape, slide);
     case 'grpSp':
-      return await groupParse(shape, slide, parser);
+      return await groupParse(shape, slide);
   }
   return null;
 }

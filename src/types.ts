@@ -37,7 +37,3 @@ export interface Theme {
   // majorFontScheme: Record<string, string>;
   // minorFontScheme: Record<string, string>;
 }
-
-export interface SlideMaster {}
-
-export interface SlideLayout {}
