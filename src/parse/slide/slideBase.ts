@@ -19,7 +19,6 @@ export default class SlideBase {
   private _background: any;
   private _elements: any;
   private _rels: any;
-  private _clrMap: any;
   private _theme: any;
 
   type: SlideType;
@@ -57,7 +56,6 @@ export default class SlideBase {
    */
   async rels(): Promise<Rels> {
     if (this._rels) return this._rels;
-    await this.clrMap();
     const slideNumber = getSlideNumber(this.sldPath);
     return await this.parser.rels(`ppt/${this.type}s/_rels/${this.type}${slideNumber}.xml.rels`);
 
@@ -125,28 +123,24 @@ export default class SlideBase {
       { ...schemeClr }
     );
 
-    return (this._theme = {
-      ...theme,
-      schemeClr: mergeSchemeClr,
-    });
+    return (this._theme = { ...theme, schemeClr: mergeSchemeClr });
   }
-  async clrMap(): Promise<Record<string, string>> {
-    if (this._clrMap) return this._clrMap;
 
+  async clrMap(): Promise<Record<string, string>> {
     const xmlNode = await this.xmlNode();
-    const clrMap = xmlNode.child('clrMap');
-    if (clrMap) return (this._clrMap = clrMap.attrs);
+    const clrMapNode = xmlNode.child('clrMap');
+    if (clrMapNode) return clrMapNode.attrs;
 
     const clrMapOvr = xmlNode.child('clrMapOvr');
     if (clrMapOvr) {
       const masterClrMap = clrMapOvr.child('masterClrMap');
-      if (masterClrMap) return (this._clrMap = await (this.master() as any).clrMap());
+      if (masterClrMap) return await (this.master() as any).clrMap();
 
       const overrideClrMapping = clrMapOvr.child('overrideClrMapping');
-      if (overrideClrMapping) return (this._clrMap = overrideClrMapping.attrs);
+      if (overrideClrMapping) return overrideClrMapping.attrs;
     }
 
-    return (this._clrMap = {
+    return {
       accent1: 'accent1',
       accent2: 'accent2',
       accent3: 'accent3',
@@ -163,7 +157,7 @@ export default class SlideBase {
       tx2: 'dk2',
       bg1: 'lt1',
       bg2: 'lt2',
-    });
+    };
   }
 
   // 生成JSON

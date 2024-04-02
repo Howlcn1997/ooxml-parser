@@ -29,14 +29,14 @@ export async function parseFill(elementPr: XmlNode, slide: SlideBase): Promise<F
   return { type: 'solid', value: { ...theme.schemeClr.accent1, scheme: 'accent1' } };
 }
 
-export async function parseSolidFill(node: XmlNode, slide: SlideBase): Promise<SolidFill> {
+export async function parseSolidFill(node: XmlNode, slide: SlideBase | null): Promise<SolidFill> {
   return {
     type: 'solid',
     value: await parseColor(node, slide),
   };
 }
 
-export async function parseGradientFill(node: XmlNode, slide: SlideBase): Promise<GradientFill> {
+export async function parseGradientFill(node: XmlNode, slide: SlideBase | null): Promise<GradientFill> {
   const rotateWithShape = node.attrs.rotWithShape === '1';
 
   const gsNodes = node.child('gsLst')?.allChild('gs') as XmlNode[];

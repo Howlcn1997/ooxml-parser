@@ -48,10 +48,7 @@ export async function parseColor(prNode: XmlNode, slide: SlideBase | null, opts?
 
     if (slide) {
       const schemeClr = (await slide.theme()).schemeClr;
-      return {
-        ...schemeClr[color.scheme],
-        ...color,
-      };
+      return { ...schemeClr[color.scheme], ...color };
     }
   }
 

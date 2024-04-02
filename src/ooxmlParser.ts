@@ -27,19 +27,8 @@ interface ParserConfig {
   embedTransformer: (type: string, embedPath: string, zip: JSZip.JSZipObject) => Promise<string>;
 }
 
-interface Store {
-  contentTypes?: ContentTypes;
-  presentation?: Presentation;
-  theme?: Theme;
-  themes?: Theme[];
-  slides?: any[];
-  layouts?: any[];
-  masters?: any[];
-}
-
 class OOXMLParser {
   zip: JSZip | undefined;
-  store: Map<keyof Store, any> = new Map<keyof Store, any>([]);
 
   config: ParserConfig;
   defaultConfig: ParserConfig = {
@@ -57,14 +46,12 @@ class OOXMLParser {
   private _slideLayouts: any = {};
   private _slideMasters: any = {};
 
-  private _notes: any = {};
-  private _notesMasters: any = {};
+  // private _notes: any = {};
+  // private _notesMasters: any = {};
 
   private _rels: any = {};
 
   private _fileCache = new Map<string, any>([]);
-
-  private _relsCache = new Map<string, Rels>([]);
 
   constructor(config?: Partial<ParserConfig>) {
     this.config = { ...this.defaultConfig, ...config };
@@ -80,8 +67,6 @@ class OOXMLParser {
     } else {
       this.zip = await JSZip.loadAsync(file);
     }
-    // 清理缓存
-    this.store.clear();
     return this.zip;
   }
 
@@ -228,12 +213,24 @@ class OOXMLParser {
     const themeXmlNode = await this.readXmlFile(path);
     const schemeClr: Record<string, Color> = {};
 
-    const children = themeXmlNode.child('themeElements')?.child('clrScheme')?.children;
+    const themeElements = themeXmlNode.child('themeElements');
+
+    const children = themeElements?.child('clrScheme')?.children;
     if (!children) return { schemeClr };
 
     for (const child of children) {
       schemeClr[child.name] = await parseColor(child, null);
     }
+
+    // const fillStyleLst = themeElements?.child('fmtScheme')?.child('fillStyleLst');
+    // if (fillStyleLst) {
+    //   const fillNodes = fillStyleLst.children;
+    //   for (const fillNode of fillNodes) {
+    //     const color = await parseFill(fillNode, null);
+    //     schemeClr[fillStyle.name] = { ...color, ...fillStyle.attrs };
+    //   }
+    // }
+
     this._themes[path] = { schemeClr };
     return this._themes[path];
   }

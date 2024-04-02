@@ -13,8 +13,8 @@ export default async function parseSlideBackground(slide: SlideBase): Promise<Ba
   const slideBgPr = slideBg?.child('bgPr');
   if (slideBgPr) return await parseFill(slideBgPr as XmlNode, slide);
 
-  // const slideBgRef = slideBg?.child('bgRef');
-  // if (slideBgRef) return await parseBgRef(slideBgRef as XmlNode, slide);
+  const slideBgRef = slideBg?.child('bgRef');
+  if (slideBgRef) return await parseBgRef(slideBgRef as XmlNode, slide);
 
   const slideLayout = await slide.layout();
   if (slideLayout) return slideLayout.background();
@@ -23,22 +23,38 @@ export default async function parseSlideBackground(slide: SlideBase): Promise<Ba
   if (slideMaster) return slideMaster.background();
 
   const theme = await slide.theme();
-  console.log('theme', theme);
   return { type: 'solid', value: theme.schemeClr['accent1'] };
 }
 
 /**
  * doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.presentation.backgroundstylereference?view=openxml-3.0.1
+ * 
+ * TODO: 完整解析 bgRef
  */
-export async function parseBgRef(node: XmlNode, slide: SlideBase): Promise<Fill | null> {
+export async function parseBgRef(node: XmlNode, slide: SlideBase): Promise<Fill> {
   const idx = +node.attrs.idx;
-  if (idx === 1000 || idx === 0) return null;
+  /** 
+   * fmtScheme 中的phClr为占位符,需要用brReg中的颜色替换
+   */
+  if (idx > 0 && idx < 1000) {
+    // theme.fmtScheme.fillStyleLst[idx - 1]
+  }
+  if (idx > 1000) {
+    // theme.fmtScheme.bgFillStyleLst[idx - 1001]
+  }
 
-  // if (idx > 1000) {
-
-  // }
   const color = await parseColor(node, slide, { defaultColor: null });
   if (color) return { type: 'solid', value: color };
 
-  return null;
+  return {
+    type: 'solid',
+    value: {
+      rgba: {
+        r: 255,
+        g: 255,
+        b: 255,
+        a: 1,
+      },
+    },
+  };
 }
