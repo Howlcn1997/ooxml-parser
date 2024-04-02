@@ -5,10 +5,11 @@ import spParse from '@/parse/shape/sp';
 import picParse from '@/parse/shape/pic';
 import groupParse from '@/parse/shape/group';
 import { Element } from './type';
+import Slide from '../slide/slideBase';
 
 export default async function parseShape(
   shape: XmlNode,
-  sldPath: string,
+  slide: Slide,
   parser: OOXMLParser
 ): Promise<Element | null> {
   switch (shape.name) {
@@ -17,11 +18,11 @@ export default async function parseShape(
     // case 'grpSpPr':
     //   return null;
     case 'sp':
-      return await spParse(shape, sldPath, parser);
+      return await spParse(shape, slide, parser);
     case 'pic':
-      return await picParse(shape, sldPath, parser);
+      return await picParse(shape, slide, parser);
     case 'grpSp':
-      return await groupParse(shape, sldPath, parser);
+      return await groupParse(shape, slide, parser);
   }
   return null;
 }

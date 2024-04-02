@@ -1,14 +1,8 @@
 import OOXMLParser from '@/ooxmlParser';
-import parseSlideBackground from '@/parse/slide/background';
-import { XmlNode } from '@/xmlNode';
-import parseShape from '@/parse/shape';
+import SlideBase from './slideBase';
 
-export default async function parseMaster(path: string, parser: OOXMLParser) {
-  const background = await parseSlideBackground(path, parser);
-  const slide = await parser.readXmlFile(path);
-  const spTree = slide.child('cSld')?.child('spTree');
-  const elements = (
-    await Promise.all(spTree?.children?.map((i: XmlNode) => parseShape(i, path, parser)) || [])
-  )?.filter(Boolean);
-  return { background, elements };
+export default class SlideMaster extends SlideBase {
+  constructor(sldPath: string, parser: OOXMLParser) {
+    super(sldPath, parser);
+  }
 }

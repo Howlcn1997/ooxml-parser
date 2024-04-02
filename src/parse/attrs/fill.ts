@@ -4,9 +4,9 @@ import { Color } from '@/parse/attrs/types';
 import OOXMLParser from '@/ooxmlParser';
 import { Percentage, angleToDegrees, emusAlphaToOpacity, emusToPercentage } from '../../utils/unit';
 import JSZip from 'jszip';
-import parseSlideBackground from '../slide/background';
+import SlideBase from '../slide/slideBase';
 
-export async function parseFill(elementPr: XmlNode, sldPath: string, parser: OOXMLParser): Promise<Fill> {
+export async function parseFill(elementPr: XmlNode, slide: SlideBase, parser: OOXMLParser): Promise<Fill> {
   for (const child of elementPr.children) {
     switch (child.name) {
       case 'solidFill':
@@ -14,16 +14,16 @@ export async function parseFill(elementPr: XmlNode, sldPath: string, parser: OOX
       case 'gradFill':
         return await parseGradientFill(child, parser);
       case 'blipFill':
-        return await parsePicFill(child, sldPath, parser);
+        return await parsePicFill(child, slide, parser);
       case 'pattFill':
-        return await parsePatternFill(child, sldPath, parser);
+        return await parsePatternFill(child, slide, parser);
       case 'noFill':
         return { type: 'noFill' };
     }
   }
 
   const useBgFill = elementPr?.parent?.attrs?.useBgFill === '1';
-  const background = useBgFill && (await parseSlideBackground(sldPath, parser));
+  const background = useBgFill && (await slide.background());
   if (background) return background;
 
   // const theme = parser.store.get('theme');
@@ -90,7 +90,7 @@ export async function parseGradientFill(node: XmlNode, parser: OOXMLParser): Pro
  * 图片或纹理(纹理填充本质上也是图片填充)
  * doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.blipfill?view=openxml-2.8.1
  */
-export async function parsePicFill(node: XmlNode, sldPath: string, parser: OOXMLParser): Promise<PicFill> {
+export async function parsePicFill(node: XmlNode, slide: SlideBase, parser: OOXMLParser): Promise<PicFill> {
   const value: Record<string, any> = {};
 
   value.rotateWithShape = node.attrs.rotWithShape === '1';
@@ -107,7 +107,7 @@ export async function parsePicFill(node: XmlNode, sldPath: string, parser: OOXML
   value.opacity = alpha ? emusAlphaToOpacity(+alpha) : 1;
 
   const embedId = blipNode?.attrs['r:embed'];
-  const rels = await parser.getSlideRels(sldPath, 'slide');
+  const rels = await slide.rels();
 
   const { type, target } = rels[embedId];
   const zipFile = (await parser.readFile(target)) as JSZip.JSZipObject;
@@ -150,7 +150,7 @@ export async function parsePicFill(node: XmlNode, sldPath: string, parser: OOXML
  * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.presetpatternvalues?view=openxml-3.0.1
  * -
  */
-export async function parsePatternFill(node: XmlNode, sldPath: string, parser: OOXMLParser): Promise<PatternFill> {
+export async function parsePatternFill(node: XmlNode, slide: SlideBase, parser: OOXMLParser): Promise<PatternFill> {
   const value: Record<string, any> = {};
 
   value.rotateWithShape = node.attrs.rotWithShape === '1';

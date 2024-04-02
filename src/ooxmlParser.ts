@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-explicit-any */
 import JSZip from 'jszip';
 import { loadNodeModule, runtimeEnv } from '@/utils/env';
 import { ContentTypes, Presentation, Theme } from '@/types';
@@ -10,10 +11,10 @@ import { parseColor } from './parse/attrs/color';
 import { Color } from './parse/attrs/types';
 
 import { Rels } from './parse/slide/types';
-import parseSlide from './parse/slide/slideMaster';
-import parseMaster from './parse/slide/slideMaster';
-import parseLayout from './parse/slide/slideLayout';
 import { emusToPt, ptToCm } from './utils/unit';
+import Slide from './parse/slide/slide';
+import SlideMaster from './parse/slide/slideMaster';
+import SlideLayout from './parse/slide/slideLayout';
 
 interface ParserConfig {
   // 自定义长度处理器
@@ -52,12 +53,14 @@ class OOXMLParser {
   private _presentation: any;
   private _themes: any = {};
 
-  private _slides: any;
+  private _slides: any = {};
   private _slideLayouts: any = {};
   private _slideMasters: any = {};
 
   private _notes: any = {};
   private _notesMasters: any = {};
+
+  private _rels: any = {};
 
   private _fileCache = new Map<string, any>([]);
 
@@ -102,8 +105,6 @@ class OOXMLParser {
     const presentation = await this.presentation();
     const contentTypes = await this.contentTypes();
     await this.theme(contentTypes.themes[0]);
-    // await this.slideMasters(contentTypes.slideMasters);
-    // await this.slideLayouts(contentTypes.slideLayouts);
     // await this.slides(contentTypes.slides);
     await this.slides([contentTypes.slides[1]]);
     return {
@@ -164,6 +165,18 @@ class OOXMLParser {
       const r2 = n2 ? parseInt(n2) : 0;
       return r1 - r2;
     }
+  }
+
+  async rels(path: string): Promise<Rels> {
+    if (this._rels[path]) return this._rels[path];
+
+    const relsFile = await this.readXmlFile(path);
+    this._rels[path] = relsFile.children.reduce((rels, i) => {
+      const type = i.attrs.Type.split('/').pop();
+      const target = i.attrs.Target.replace('..', 'ppt');
+      return { ...rels, [i.attrs.Id]: { type, target } };
+    }, {});
+    return this._rels[path];
   }
 
   async getSlideRels(slidePath: string, scope: 'master' | 'layout' | 'slide' = 'slide'): Promise<Rels> {
@@ -253,31 +266,42 @@ class OOXMLParser {
   /**
    * 版式
    */
-  async slideLayouts(paths: string[]) {
+  async slideLayout(path: string) {
     if (!this.zip) throw new Error('No zip file loaded');
-    if (this.store.has('layouts')) return this.store.get('layouts');
-    const layouts = await Promise.all(paths.map(async layoutPath => await parseLayout(layoutPath, this)));
-    this.store.set('layouts', layouts);
-    return layouts;
+    if (this._slideLayouts[path]) return this._slideLayouts[path];
+    this._slideLayouts[path] = await SlideLayout(path, this);
+    return this._slideLayouts[path];
   }
+
+  async slideLayouts(paths: string[]) {
+    return Promise.all(paths.map(path => this.slideLayout(path)));
+  }
+
   /**
    * 母版
    */
-  async slideMasters(paths: string[]) {
+  async slideMaster(path: string) {
     if (!this.zip) throw new Error('No zip file loaded');
-    if (this.store.has('masters')) return this.store.get('masters');
-    const masters = await Promise.all(paths.map(async masterPath => await parseMaster(masterPath, this)));
-    this.store.set('masters', masters);
-    return masters;
+    if (this._slideMasters[path]) return this._slideMasters[path];
+    this._slideMasters[path] = await new SlideMaster(path, this).parse();
+    return this._slideMasters[path];
+  }
+
+  async slideMasters(paths: string[]) {
+    return Promise.all(paths.map(path => this.slideMaster(path)));
   }
   /**
    * 幻灯片
    */
-  async slides(paths: string[]) {
+  async slide(path: string) {
     if (!this.zip) throw new Error('No zip file loaded');
-    if (this._slides) return this._slides;
-    this._slides = await Promise.all(paths.map(async sldPath => await parseSlide(sldPath, this)));
-    return this._slides;
+    if (this._slides[path]) return this._slides[path];
+    this._slides[path] = await new Slide(path, this).parse();
+    return this._slides[path];
+  }
+
+  async slides(paths: string[]) {
+    return Promise.all(paths.map(path => this.slide(path)));
   }
 
   async allXmlFile() {
