@@ -1,5 +1,5 @@
 import OOXMLParser from '@/ooxmlParser';
-import parseSlideBackground from '@/parse/slide/bg';
+import parseSlideBackground from '@/parse/slide/background';
 import { XmlNode } from '@/xmlNode';
 import parseShape from '@/parse/shape';
 

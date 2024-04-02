@@ -68,7 +68,8 @@ function getScheme(node: XmlNode): { scheme?: Scheme; system?: System; rgba?: Rg
 
 function schemeClr(scheme: Scheme, parser: OOXMLParser, clrMap?: Record<string, string>): Rgba {
   const theme = parser.store.get('theme');
-  if (!theme) throw new Error('No theme loaded');
+  // if (!theme) throw new Error('No theme loaded');
+  if (!theme) return { r: 0, g: 0, b: 0, a: 1 };
   clrMap = clrMap || {
     accent1: 'accent1',
     accent2: 'accent2',

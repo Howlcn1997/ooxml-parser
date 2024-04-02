@@ -2,9 +2,9 @@ import { XmlNode } from '@/xmlNode';
 import { parseColor } from '@/parse/attrs/color';
 import { Color } from '@/parse/attrs/types';
 import OOXMLParser from '@/ooxmlParser';
-import { Percentage, angleToDegrees, emusAlphaToOpacity, emusToPercentage, emusToPt } from '../../utils/unit';
+import { Percentage, angleToDegrees, emusAlphaToOpacity, emusToPercentage } from '../../utils/unit';
 import JSZip from 'jszip';
-import parseSlideBackground from '../slide/bg';
+import parseSlideBackground from '../slide/background';
 
 export async function parseFill(elementPr: XmlNode, sldPath: string, parser: OOXMLParser): Promise<Fill> {
   for (const child of elementPr.children) {
@@ -26,8 +26,9 @@ export async function parseFill(elementPr: XmlNode, sldPath: string, parser: OOX
   const background = useBgFill && (await parseSlideBackground(sldPath, parser));
   if (background) return background;
 
-  const theme = parser.store.get('theme');
-  return { type: 'solid', value: { ...theme.schemeClr.accent1, scheme: 'accent1' } };
+  // const theme = parser.store.get('theme');
+  // return { type: 'solid', value: { ...theme.schemeClr.accent1, scheme: 'accent1' } };
+  return { type: 'noFill' };
 }
 
 export function parseSolidFill(node: XmlNode, parser: OOXMLParser): SolidFill {
@@ -121,8 +122,8 @@ export async function parsePicFill(node: XmlNode, sldPath: string, parser: OOXML
   function parseTile(tile: XmlNode, parser: OOXMLParser): FillTile {
     const { tx, ty, sx, sy, flip, algn } = tile.attrs;
     return {
-      offX: emusToPt(+tx, parser.config.lengthHandler),
-      offY: emusToPt(+ty, parser.config.lengthHandler),
+      offX: parser.config.lengthHandler(+tx),
+      offY: parser.config.lengthHandler(+ty),
       radioX: emusToPercentage(+sx),
       radioY: emusToPercentage(+sy),
       flip,

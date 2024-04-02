@@ -10,16 +10,16 @@ import { parseColor } from './parse/attrs/color';
 import { Color } from './parse/attrs/types';
 
 import { Rels } from './parse/slide/types';
-import parseSlide from './parse/slide/master';
-import parseMaster from './parse/slide/master';
-import parseLayout from './parse/slide/layout';
-import { ptToCm } from './utils/unit';
+import parseSlide from './parse/slide/slideMaster';
+import parseMaster from './parse/slide/slideMaster';
+import parseLayout from './parse/slide/slideLayout';
+import { emusToPt, ptToCm } from './utils/unit';
 
 interface ParserConfig {
   // 自定义长度处理器
-  lengthHandler: (pt: number) => number;
+  lengthHandler: (emus: number) => number;
   // 自定义字体大小处理器
-  fontSizeHandler: (pt: number) => number;
+  fontSizeHandler: (emus: number) => number;
   // 自定义字体(ttf,woff,etc)处理器
   fontHandler: (file: File) => Promise<string>;
   // 自定义嵌入内容(Excel,Word,image,video,audio,...)处理器
@@ -42,16 +42,26 @@ class OOXMLParser {
 
   config: ParserConfig;
   defaultConfig: ParserConfig = {
-    lengthHandler: pt => Math.round((ptToCm(pt) + Number.EPSILON) * 100) / 100,
-    fontSizeHandler: pt => pt,
+    lengthHandler: emus => Math.round((ptToCm(emusToPt(emus)) + Number.EPSILON) * 100) / 100,
+    fontSizeHandler: emus => emusToPt(emus),
     fontHandler,
     embedTransformer,
   };
 
+  private _contentTypes: any;
+  private _presentation: any;
+  private _themes: any = {};
 
+  private _slides: any;
+  private _slideLayouts: any = {};
+  private _slideMasters: any = {};
+
+  private _notes: any = {};
+  private _notesMasters: any = {};
+
+  private _fileCache = new Map<string, any>([]);
 
   private _relsCache = new Map<string, Rels>([]);
-  private _fileCache = new Map<string, any>([]);
 
   constructor(config?: Partial<ParserConfig>) {
     this.config = { ...this.defaultConfig, ...config };
@@ -89,26 +99,30 @@ class OOXMLParser {
 
   async parse(file: File) {
     this.zip = this.zip || (await this.loadFile(file));
-    await this.parsePresentation();
-    const contentTypes = await this.parseContentTypes();
-    await this.parseThemes(contentTypes.themes);
-    this.store.set('theme', this.store.get('themes')[0]);
-    // await this.parseSlideMasters(contentTypes.slideMasters);
-    // await this.parseSlideLayouts(contentTypes.slideLayouts);
-    // await this.parseSlides(contentTypes.slides);
-    await this.parseSlides([contentTypes.slides[1]]);
-    return this.store;
+    const presentation = await this.presentation();
+    const contentTypes = await this.contentTypes();
+    await this.theme(contentTypes.themes[0]);
+    // await this.slideMasters(contentTypes.slideMasters);
+    // await this.slideLayouts(contentTypes.slideLayouts);
+    // await this.slides(contentTypes.slides);
+    await this.slides([contentTypes.slides[1]]);
+    return {
+      slideSize: presentation.slideSize,
+      noteSize: presentation.noteSize,
+      theme: this._themes,
+      slides: this._slides,
+    };
   }
 
   /**
    * doc: https://learn.microsoft.com/en-us/visualstudio/extensibility/the-structure-of-the-content-types-dot-xml-file?view=vs-2022
    */
-  async parseContentTypes(): Promise<ContentTypes> {
+  async contentTypes(): Promise<ContentTypes> {
     if (!this.zip) throw new Error('No zip file loaded');
 
-    if (this.store.has('contentTypes')) return this.store.get('contentTypes');
+    if (this._contentTypes) return this._contentTypes;
 
-    const result: ContentTypes = {
+    this._contentTypes = {
       slides: [],
       slideLayouts: [],
       slideMasters: [],
@@ -122,28 +136,26 @@ class OOXMLParser {
     overrides.forEach((i: XmlNode) => {
       switch (i.attrs.ContentType) {
         case 'application/vnd.openxmlformats-officedocument.presentationml.slide+xml':
-          result.slides.push(i.attrs.PartName.substring(1));
+          this._contentTypes.slides.push(i.attrs.PartName.substring(1));
           break;
         case 'application/vnd.openxmlformats-officedocument.presentationml.slideLayout+xml':
-          result.slideLayouts.push(i.attrs.PartName.substring(1));
+          this._contentTypes.slideLayouts.push(i.attrs.PartName.substring(1));
           break;
         case 'application/vnd.openxmlformats-officedocument.presentationml.slideMaster+xml':
-          result.slideMasters.push(i.attrs.PartName.substring(1));
+          this._contentTypes.slideMasters.push(i.attrs.PartName.substring(1));
           break;
         case 'application/vnd.openxmlformats-officedocument.theme+xml':
-          result.themes.push(i.attrs.PartName.substring(1));
+          this._contentTypes.themes.push(i.attrs.PartName.substring(1));
           break;
       }
     });
 
-    result.slides = result.slides.sort(sortSlideXml);
-    result.slideLayouts = result.slideLayouts.sort(sortSlideXml);
-    result.slideMasters = result.slideMasters.sort(sortSlideXml);
-    result.themes = result.themes.sort(sortSlideXml);
+    this._contentTypes.slides = this._contentTypes.slides.sort(sortSlideXml);
+    this._contentTypes.slideLayouts = this._contentTypes.slideLayouts.sort(sortSlideXml);
+    this._contentTypes.slideMasters = this._contentTypes.slideMasters.sort(sortSlideXml);
+    this._contentTypes.themes = this._contentTypes.themes.sort(sortSlideXml);
 
-    this.store.set('contentTypes', result);
-
-    return result;
+    return this._contentTypes;
 
     function sortSlideXml(p1: string, p2: string): number {
       const n1 = /(\d+)\.xml/.exec(p1)?.[1];
@@ -179,11 +191,11 @@ class OOXMLParser {
   /**
    * doc: https://learn.microsoft.com/en-us/office/open-xml/presentation/structure-of-a-presentationml-document
    */
-  async parsePresentation(): Promise<Presentation> {
+  async presentation(): Promise<Presentation> {
     if (!this.zip) throw new Error('No zip file loaded');
-    if (this.store.has('presentation')) return this.store.get('presentation');
+    if (this._presentation) return this._presentation;
 
-    const result: Presentation = {
+    this._presentation = {
       slideMasterIdList: [],
       slideIdList: [],
       slideSize: {},
@@ -194,49 +206,54 @@ class OOXMLParser {
 
     presentation.children.forEach((i: XmlNode) => {
       if (i.name === 'sldMasterIdLst') {
-        result.slideMasterIdList = i.child('sldMasterId')?.attrs['r:id'];
+        this._presentation.slideMasterIdList = i.child('sldMasterId')?.attrs['r:id'];
       } else if (i.name === 'sldIdLst') {
-        result.slideIdList = i.allChild('sldId').map(j => j.attrs['r:id']);
+        this._presentation.slideIdList = i.allChild('sldId').map(j => j.attrs['r:id']);
       } else if (i.name === 'sldSz') {
-        result.slideSize = i.attrs;
+        this._presentation.slideSize = {
+          width: this.config.lengthHandler(i.attrs.cx),
+          height: this.config.lengthHandler(i.attrs.cy),
+        };
       } else if (i.name === 'notesSz') {
-        result.noteSize = i.attrs;
+        this._presentation.noteSize = {
+          width: this.config.lengthHandler(i.attrs.cx),
+          height: this.config.lengthHandler(i.attrs.cy),
+        };
       } else if (i.name === 'defaultTextStyle') {
         i.children.forEach((j: XmlNode) => {
-          result.defaultTextStyle[j.name] = j.attrs;
+          this._presentation.defaultTextStyle[j.name] = j.attrs;
         });
       }
     });
 
-    this.store.set('presentation', result);
-
-    return result;
+    return this._presentation;
   }
   /**
    * 主题
    */
-  async parseThemes(paths: string[]): Promise<Theme[]> {
-    if (this.store.has('themes')) return this.store.get('themes');
+  async theme(path: string): Promise<Theme> {
+    if (this._themes[path]) return this._themes[path];
 
-    const themeXmlNodes = await Promise.all(paths.map(i => this.readXmlFile(i)));
-    const themes = themeXmlNodes.map(i => {
-      const schemeClr: Record<string, Color> = {};
+    const themeXmlNode = await this.readXmlFile(path);
+    const schemeClr: Record<string, Color> = {};
 
-      i.child('themeElements')
-        ?.child('clrScheme')
-        ?.children.forEach((j: XmlNode) => (schemeClr[j.name] = parseColor(j, this, { schemeToRgba: false })));
+    themeXmlNode
+      .child('themeElements')
+      ?.child('clrScheme')
+      ?.children.forEach((j: XmlNode) => (schemeClr[j.name] = parseColor(j, this, { schemeToRgba: false })));
 
-      return { schemeClr } as Theme;
-    });
+    this._themes[path] = schemeClr;
+    return this._themes[path];
+  }
 
-    this.store.set('themes', themes);
-    return themes;
+  async themes(paths: string[]): Promise<Theme[]> {
+    return await Promise.all(paths.map(path => this.theme(path)));
   }
 
   /**
    * 版式
    */
-  async parseSlideLayouts(paths: string[]) {
+  async slideLayouts(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
     if (this.store.has('layouts')) return this.store.get('layouts');
     const layouts = await Promise.all(paths.map(async layoutPath => await parseLayout(layoutPath, this)));
@@ -246,7 +263,7 @@ class OOXMLParser {
   /**
    * 母版
    */
-  async parseSlideMasters(paths: string[]) {
+  async slideMasters(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
     if (this.store.has('masters')) return this.store.get('masters');
     const masters = await Promise.all(paths.map(async masterPath => await parseMaster(masterPath, this)));
@@ -256,12 +273,11 @@ class OOXMLParser {
   /**
    * 幻灯片
    */
-  async parseSlides(paths: string[]) {
+  async slides(paths: string[]) {
     if (!this.zip) throw new Error('No zip file loaded');
-    if (this.store.has('slides')) return this.store.get('slides');
-    const slides = await Promise.all(paths.map(async sldPath => await parseSlide(sldPath, this)));
-    this.store.set('slides', slides);
-    return slides;
+    if (this._slides) return this._slides;
+    this._slides = await Promise.all(paths.map(async sldPath => await parseSlide(sldPath, this)));
+    return this._slides;
   }
 
   async allXmlFile() {

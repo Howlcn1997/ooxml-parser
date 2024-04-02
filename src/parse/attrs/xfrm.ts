@@ -1,6 +1,5 @@
 import OOXMLParser from '@/ooxmlParser';
 import { XmlNode } from '@/xmlNode';
-import { emusToPt } from '../../utils/unit';
 
 /**
  * doc:
@@ -42,13 +41,13 @@ export default async function parse(shape: XmlNode, parser: OOXMLParser) {
   }
 
   const lengthHandler = parser.config.lengthHandler;
-  
+
   return {
     flipV: flipV === '1',
     flipH: flipH === '1',
-    left: emusToPt(left, lengthHandler),
-    top: emusToPt(top, lengthHandler),
-    width: emusToPt(width, lengthHandler),
-    height: emusToPt(height, lengthHandler),
+    left: lengthHandler(left),
+    top: lengthHandler(top),
+    width: lengthHandler(width),
+    height: lengthHandler(height),
   };
 }
