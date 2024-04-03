@@ -89,15 +89,26 @@ class OOXMLParser {
     this.zip = this.zip || (await this.loadFile(file));
     const presentation = await this.presentation();
     const contentTypes = await this.contentTypes();
-    await this.theme(contentTypes.themes[0]);
     // await this.slides(contentTypes.slides);
     await this.slides([contentTypes.slides[7]]);
+
+    const themePaths = Object.keys(this._themes).sort(sortXml);
+    const slidePaths = Object.keys(this._slides).sort(sortXml);
+
     return {
       slideSize: presentation.slideSize,
       noteSize: presentation.noteSize,
-      theme: this._themes,
-      slides: this._slides,
+      themes: themePaths.map(path => this._themes[path]),
+      slides: slidePaths.map(path => this._slides[path]),
     };
+
+    function sortXml(p1: string, p2: string): number {
+      const n1 = /(\d+)\.xml/.exec(p1)?.[1];
+      const n2 = /(\d+)\.xml/.exec(p2)?.[1];
+      const r1 = n1 ? parseInt(n1) : 0;
+      const r2 = n2 ? parseInt(n2) : 0;
+      return r1 - r2;
+    }
   }
 
   /**
@@ -136,20 +147,7 @@ class OOXMLParser {
       }
     });
 
-    this._contentTypes.slides = this._contentTypes.slides.sort(sortSlideXml);
-    this._contentTypes.slideLayouts = this._contentTypes.slideLayouts.sort(sortSlideXml);
-    this._contentTypes.slideMasters = this._contentTypes.slideMasters.sort(sortSlideXml);
-    this._contentTypes.themes = this._contentTypes.themes.sort(sortSlideXml);
-
     return this._contentTypes;
-
-    function sortSlideXml(p1: string, p2: string): number {
-      const n1 = /(\d+)\.xml/.exec(p1)?.[1];
-      const n2 = /(\d+)\.xml/.exec(p2)?.[1];
-      const r1 = n1 ? parseInt(n1) : 0;
-      const r2 = n2 ? parseInt(n2) : 0;
-      return r1 - r2;
-    }
   }
 
   async rels(path: string): Promise<Rels> {

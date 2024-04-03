@@ -16,6 +16,12 @@ export default async function parseShape(shape: XmlNode, slide: Slide): Promise<
       return await spParse(shape, slide);
     case 'pic':
       return await picParse(shape, slide);
+    case 'cxnSp':
+      return null;
+    case 'graphicFrame':
+      return null;
+    case 'AlternateContent':
+      return null;
     case 'grpSp':
       return await groupParse(shape, slide);
   }

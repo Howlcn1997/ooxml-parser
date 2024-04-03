@@ -148,7 +148,11 @@ export async function parsePicFill(node: XmlNode, slide: SlideBase): Promise<Pic
  * doc:
  * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.patternfill?view=openxml-3.0.1
  * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.presetpatternvalues?view=openxml-3.0.1
- * -
+ * 
+ * TODO: 解析Pattern
+ *  - 获取相应pattern的图案
+ *  - canvas修改前景色和后景色
+ *  - 以平铺的形式返回
  */
 export async function parsePatternFill(node: XmlNode, slide: SlideBase): Promise<PatternFill> {
   const value: Record<string, any> = {};
@@ -166,8 +170,6 @@ export async function parsePatternFill(node: XmlNode, slide: SlideBase): Promise
     value: value as PatternFill['value'],
   };
 }
-
-// ============== tools ================
 
 // ============== types ================
 export type Fill = NoFill | SolidFill | GradientFill | PatternFill | PicFill;

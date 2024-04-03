@@ -21,9 +21,20 @@ export interface BaseElement {
   flipV?: boolean;
   // 旋转角度
   rotate?: number;
+  // 填充
   fill?: Fill;
+  // 线条
   line?: Line;
+  // 位置尺寸
   dimension?: Dimension;
+  // 阴影
+  shadow?: any;
+  // 发光
+  light?: any;
+  // 3d旋转
+  rotate3d?: any;
+  // 文本框
+  text?: any;
 }
 
 interface Dimension {
@@ -33,7 +44,23 @@ interface Dimension {
   height: number;
 }
 
-export interface Shape extends BaseElement {}
+export interface CustomGeometry {
+  name: string;
+  paths: {
+    width: number;
+    height: number;
+    d: string;
+  };
+}
+
+export interface presetGeometry {
+  name: string;
+  // Adjust Value List 几何形状的调整值列表
+  avList: Record<string, number>[];
+}
+export interface Shape extends BaseElement {
+  geometry: CustomGeometry | presetGeometry;
+}
 
 export interface Pic extends BaseElement {}
 
