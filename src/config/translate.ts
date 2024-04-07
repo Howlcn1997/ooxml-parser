@@ -1,6 +1,6 @@
 const translationMap: Record<string, string> = {
-  cx: 'width',
-  cy: 'height',
+  cx: 'w',
+  cy: 'h',
 };
 
 export const translate = (key: string) => translationMap[key] || key;

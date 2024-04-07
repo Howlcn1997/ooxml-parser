@@ -185,13 +185,13 @@ class OOXMLParser {
         this._presentation.slideIdList = i.allChild('sldId').map(j => j.attrs['r:id']);
       } else if (i.name === 'sldSz') {
         this._presentation.slideSize = {
-          width: this.config.lengthHandler(i.attrs.cx),
-          height: this.config.lengthHandler(i.attrs.cy),
+          w: this.config.lengthHandler(i.attrs.cx),
+          h: this.config.lengthHandler(i.attrs.cy),
         };
       } else if (i.name === 'notesSz') {
         this._presentation.noteSize = {
-          width: this.config.lengthHandler(i.attrs.cx),
-          height: this.config.lengthHandler(i.attrs.cy),
+          w: this.config.lengthHandler(i.attrs.cx),
+          h: this.config.lengthHandler(i.attrs.cy),
         };
       } else if (i.name === 'defaultTextStyle') {
         i.children.forEach((j: XmlNode) => {

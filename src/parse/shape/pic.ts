@@ -5,13 +5,13 @@ import { Pic } from './type';
 import SlideBase from '../slide/slideBase';
 
 export default async function parse(shape: XmlNode, slide: SlideBase): Promise<Pic> {
-  const { flipV, flipH, left, top, width, height } = await parseXfrm(shape, slide);
+  const { flipV, flipH, left, top, w, h } = await parseXfrm(shape, slide);
   const fill = await parseFill(shape, slide);
   return {
     type: 'pic',
     flipH,
     flipV,
     fill,
-    dimension: { left, top, width, height },
+    dimension: { left, top, w, h },
   };
 }

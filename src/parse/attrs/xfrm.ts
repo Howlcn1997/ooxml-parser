@@ -47,7 +47,7 @@ export default async function parse(shape: XmlNode, slide: SlideBase) {
     flipH: flipH === '1',
     left: lengthHandler(left),
     top: lengthHandler(top),
-    width: lengthHandler(width),
-    height: lengthHandler(height),
+    w: lengthHandler(width),
+    h: lengthHandler(height),
   };
 }

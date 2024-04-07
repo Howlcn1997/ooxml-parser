@@ -1,18 +1,6 @@
 import { Fill } from '../attrs/fill';
 import { Line } from '../attrs/types';
 
-// export interface Element {
-//   type: string;
-//   // 水平翻转
-//   filpH?: boolean;
-//   // 垂直翻转
-//   flipV?: boolean;
-//   width?: number;
-//   height?: number;
-//   // 内边距
-//   padding?: number[];
-// }
-
 export interface BaseElement {
   type: string;
   // 水平翻转
@@ -40,15 +28,15 @@ export interface BaseElement {
 interface Dimension {
   left: number;
   top: number;
-  width: number;
-  height: number;
+  w: number;
+  h: number;
 }
 
 export interface CustomGeometry {
   name: string;
   paths: {
-    width: number;
-    height: number;
+    w: number;
+    h: number;
     d: string;
   };
 }
