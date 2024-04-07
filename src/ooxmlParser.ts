@@ -32,7 +32,9 @@ class OOXMLParser {
 
   config: ParserConfig;
   defaultConfig: ParserConfig = {
-    lengthHandler: emus => Math.round((ptToCm(emusToPt(emus)) + Number.EPSILON) * 100) / 100,
+    // lengthHandler: emus => Math.round((ptToCm(emusToPt(emus)) + Number.EPSILON) * 100) / 100,
+    lengthHandler: emus => Math.round((emusToPt(emus) + Number.EPSILON) * 100) / 100,
+    // lengthHandler: emus => emus * 96 / 914400,
     fontSizeHandler: emus => emusToPt(emus),
     fontHandler,
     embedTransformer,
@@ -90,7 +92,7 @@ class OOXMLParser {
     const presentation = await this.presentation();
     const contentTypes = await this.contentTypes();
     // await this.slides(contentTypes.slides);
-    await this.slides([contentTypes.slides[7]]);
+    await this.slides([contentTypes.slides[9]]);
 
     const themePaths = Object.keys(this._themes).sort(sortXml);
     const slidePaths = Object.keys(this._slides).sort(sortXml);

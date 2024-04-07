@@ -1,5 +1,6 @@
 import { XmlNode } from '@/xmlNode';
 import SlideBase from '../slide/slideBase';
+import { Xfrm } from './types';
 
 /**
  * doc:
@@ -7,13 +8,10 @@ import SlideBase from '../slide/slideBase';
  * -
  * 解析 xfrm 元素
  */
-export default async function parse(shape: XmlNode, slide: SlideBase) {
-  const result: Record<string, any> = {};
+export default async function parse(shape: XmlNode, slide: SlideBase): Promise<Xfrm> {
+  const xfrm = (shape.child('spPr') as XmlNode).child('xfrm') as XmlNode;
 
-  const xfrm = shape.child('spPr')?.child('xfrm');
-  if (!xfrm) return result;
-
-  const { flipV, flipH } = xfrm?.attrs || {};
+  const { flipV, flipH } = xfrm.attrs || {};
 
   const { x, y } = xfrm.child('off')?.attrs || { x: '0', y: '0' };
   const { cx, cy } = xfrm.child('ext')?.attrs || { cx: '0', cy: '0' };

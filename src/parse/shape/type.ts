@@ -34,11 +34,9 @@ interface Dimension {
 
 export interface CustomGeometry {
   name: string;
-  paths: {
-    w: number;
-    h: number;
-    d: string;
-  };
+  paths: string[];
+  stroke?: Line;
+  fill?: Fill;
 }
 
 export interface presetGeometry {

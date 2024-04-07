@@ -1,24 +1,34 @@
 import { XmlNode } from '@/xmlNode';
 import SlideBase from '../slide/slideBase';
+import { Xfrm } from './types';
 
-export default function parsePath(pathNode: XmlNode, slide: SlideBase) {
+/**
+ * avLst 转换为SVG path，并将SVG视图大小缩放至shapeXfrm尺寸
+ */
+export default function parsePath(pathNode: XmlNode, slide: SlideBase, shapeXfrm: Xfrm) {
   const children = pathNode.children;
-  const { w, h } = pathNode.attrs;
+  let { w, h } = pathNode.attrs;
+  w = slide.parser.config.lengthHandler(w);
+  h = slide.parser.config.lengthHandler(h);
 
-  const lHandler = (emus: string) => slide.parser.config.lengthHandler(+emus);
+  const rw = +(shapeXfrm.w || w) / +w;
+  const rh = +(shapeXfrm.h || h) / +h;
+
+  const xhdl = (emus: string) => slide.parser.config.lengthHandler(+emus * rw);
+  const yhdl = (emus: string) => slide.parser.config.lengthHandler(+emus * rh);
 
   const d = children.reduce((acc, child) => {
     switch (child.name) {
       case 'arcTo':
-        return acc + arcTo(child, lHandler);
+        return acc + arcTo(child);
       case 'cubicBezTo':
-        return acc + cubicBezTo(child, lHandler);
+        return acc + cubicBezTo(child);
       case 'lnTo':
-        return acc + lnTo(child, lHandler);
+        return acc + lnTo(child);
       case 'moveTo':
-        return acc + moveTo(child, lHandler);
+        return acc + moveTo(child);
       case 'quadBezTo':
-        return acc + quadBezTo(child, lHandler);
+        return acc + quadBezTo(child);
       case 'close':
         return acc + close();
       default:
@@ -26,45 +36,41 @@ export default function parsePath(pathNode: XmlNode, slide: SlideBase) {
     }
   }, '');
 
-  return {
-    w: lHandler(w),
-    h: lHandler(h),
-    d,
-  };
+  return d;
 
-  function lnTo(node: XmlNode, lh: typeof lHandler): string {
+  function lnTo(node: XmlNode): string {
     const { x, y } = (node.child('pt') as XmlNode).attrs;
 
-    return `L ${lh(x)},${lh(y)} `;
+    return `L ${xhdl(x)},${yhdl(y)} `;
   }
-  function cubicBezTo(node: XmlNode, lh: typeof lHandler): string {
+  function cubicBezTo(node: XmlNode): string {
     const [pt1, pt2, pt3] = node.allChild('pt') as XmlNode[];
     const { x: x1, y: y1 } = pt1.attrs;
     const { x: x2, y: y2 } = pt2.attrs;
     const { x: x3, y: y3 } = pt3.attrs;
 
-    return `C ${lh(x1)},${lh(y1)} ${lh(x2)},${lh(y2)} ${lh(x3)},${lh(y3)} `;
+    return `C ${xhdl(x1)},${yhdl(y1)} ${xhdl(x2)},${yhdl(y2)} ${xhdl(x3)},${yhdl(y3)} `;
   }
 
-  function arcTo(node: XmlNode, lh: typeof lHandler) {
+  function arcTo(node: XmlNode) {
     const { wR, hR, stAng, swAng } = node.attrs;
     const { x, y } = (node.child('pt') as XmlNode).attrs;
 
-    return `A ${lh(wR)},${lh(hR)} ${lh(stAng)} ${lh(swAng)} ${lh(x)},${lh(y)} `;
+    return `A ${xhdl(wR)},${yhdl(hR)} ${xhdl(stAng)} ${yhdl(swAng)} ${xhdl(x)},${yhdl(y)} `;
   }
 
-  function quadBezTo(node: XmlNode, lh: typeof lHandler) {
+  function quadBezTo(node: XmlNode) {
     const [pt1, pt2] = node.allChild('pt') as XmlNode[];
     const { x: x1, y: y1 } = pt1.attrs;
     const { x: x2, y: y2 } = pt2.attrs;
 
-    return `Q ${lh(x1)},${lh(y1)} ${lh(x2)},${lh(y2)} `;
+    return `Q ${xhdl(x1)},${yhdl(y1)} ${xhdl(x2)},${yhdl(y2)} `;
   }
 
-  function moveTo(node: XmlNode, lh: typeof lHandler) {
+  function moveTo(node: XmlNode) {
     const { x, y } = (node.child('pt') as XmlNode).attrs;
 
-    return `M ${lh(x)},${lh(y)} `;
+    return `M ${xhdl(x)},${yhdl(y)} `;
   }
 
   function close() {

@@ -7,6 +7,7 @@ import { Element } from './type';
 import Slide from '../slide/slideBase';
 
 export default async function parseShape(shape: XmlNode, slide: Slide): Promise<Element | null> {
+  console.log(shape._node);
   switch (shape.name) {
     // case 'nvGrpSpPr':
     //   return null;
