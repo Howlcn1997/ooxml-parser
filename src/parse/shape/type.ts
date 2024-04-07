@@ -1,7 +1,10 @@
 import { Fill } from '../attrs/fill';
-import { Line } from '../attrs/types';
+import { CustomGeometry, Line, presetGeometry } from '../attrs/types';
 
 export interface BaseElement {
+  // 元素在slide中的唯一标识
+  id: string;
+  // 元素类型
   type: string;
   // 水平翻转
   flipH?: boolean;
@@ -32,20 +35,15 @@ interface Dimension {
   h: number;
 }
 
-export interface CustomGeometry {
-  name: string;
-  paths: string[];
-  stroke?: Line;
-  fill?: Fill;
-}
 
-export interface presetGeometry {
-  name: string;
-  // Adjust Value List 几何形状的调整值列表
-  avList: Record<string, number>[];
-}
 export interface Shape extends BaseElement {
   geometry: CustomGeometry | presetGeometry;
+}
+
+export interface CxnShape extends Shape {
+  geometry: CustomGeometry | presetGeometry;
+  startId?: string;
+  endId?: string;
 }
 
 export interface Pic extends BaseElement {}

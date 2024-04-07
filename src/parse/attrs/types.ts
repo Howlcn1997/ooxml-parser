@@ -78,3 +78,16 @@ export interface Xfrm {
   w: number;
   h: number;
 }
+
+export interface CustomGeometry {
+  name: string;
+  paths: string[];
+  stroke?: Line;
+  fill?: Fill;
+}
+
+export interface presetGeometry {
+  name: string;
+  // Adjust Value List 几何形状的调整值列表
+  // avList: Record<string, number>[];
+}
