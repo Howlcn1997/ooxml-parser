@@ -10,7 +10,10 @@ interface ParseColorOptions {
   clrMap?: Record<string, string>;
   defaultColor?: any;
 }
-const defaultOptions: ParseColorOptions = { transformToRgba: true };
+const defaultOptions: ParseColorOptions = {
+  transformToRgba: true,
+  defaultColor: { rgba: { r: 0, g: 0, b: 0, a: 1 }, transform: {} },
+};
 
 /**
  * prNode 中必须含有color相关属性，例如srgbClr、schemeClr等
@@ -42,17 +45,21 @@ export async function parseColor(prNode: XmlNode, slide: SlideBase | null, opts?
     const transform = getTransform(child);
 
     let alpha = child.child('alpha')?.attrs?.val;
-    alpha = alpha ? emusToPercentage(+alpha) : emusToPercentage(10000);
+    alpha = alpha ? emusToPercentage(+alpha) : emusToPercentage(100000);
 
     if (color.rgba) return { ...color, transform, rgba: color.rgba.setAlpha(alpha).toRgb() };
 
     if (slide) {
-      const schemeClr = (await slide.theme()).schemeClr;
-      return { ...schemeClr[color.scheme], ...color };
+      const schemeClr = (await slide.theme()).schemeClr[color.scheme];
+      return {
+        ...schemeClr,
+        ...color,
+        rgba: { ...schemeClr.rgba, a: alpha },
+      };
     }
   }
 
-  return options.defaultColor || { rgba: { r: 0, g: 0, b: 0, a: 1 } };
+  return options.defaultColor;
 }
 
 function getTransform(node: XmlNode): ColorTransform {

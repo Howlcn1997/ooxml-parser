@@ -3,7 +3,8 @@ import parseXfrm from '@/parse/attrs/xfrm';
 import { parseFill } from '@/parse/attrs/fill';
 import { CxnShape } from './type';
 import SlideBase from '../slide/slideBase';
-import extractGeometry from '../attrs/geometry';
+import parseGeometry from '../attrs/geometry';
+import parseText from '../attrs/text';
 
 /**
  * 连接符图形(肘形连接符,直线连接符,曲线连接符...)
@@ -21,15 +22,18 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<C
 
   const shapeProps = shape.child('spPr') as XmlNode;
   const fill = await parseFill(shapeProps, slide);
-  const geometry = await extractGeometry(shapeProps, slide, xfrm);
+  const geometry = await parseGeometry(shapeProps, slide, xfrm);
+  const text = await parseText(shape, slide);
+
   return {
     id,
     ...(startId ? { startId } : {}),
     ...(endId ? { endId } : {}),
-    type: 'connectShape',
+    type: 'cxnShape',
     flipH,
     flipV,
     fill,
+    text,
     geometry,
     dimension: { w, h, left, top },
   };

@@ -4,6 +4,7 @@ import { parseFill } from '@/parse/attrs/fill';
 import { Shape } from './type';
 import SlideBase from '../slide/slideBase';
 import extractGeometry from '../attrs/geometry';
+import parseText from '../attrs/text';
 
 export default async function parse(shape: XmlNode, slide: SlideBase): Promise<Shape> {
   const xfrm = await parseXfrm(shape, slide);
@@ -14,12 +15,14 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<S
   const shapeProps = shape.child('spPr') as XmlNode;
   const fill = await parseFill(shapeProps, slide);
   const geometry = await extractGeometry(shapeProps, slide, xfrm);
+  const text = await parseText(shape, slide);
   return {
     id,
     type: 'shape',
     flipH,
     flipV,
     fill,
+    text,
     geometry,
     dimension: { w, h, left, top },
   };

@@ -53,9 +53,8 @@ export interface ColorTransform {
  *  - https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.outline?view=openxml-3.0.1
  */
 export interface Line {
-  type: 'none' | '';
   // 线条宽度
-  width: number;
+  w: number;
   // 线条颜色
   fill: Fill;
   /**
@@ -82,12 +81,50 @@ export interface Xfrm {
 export interface CustomGeometry {
   name: string;
   paths: string[];
-  stroke?: Line;
-  fill?: Fill;
+  line: Line | null;
+  fill: Fill | null;
 }
 
 export interface presetGeometry {
   name: string;
-  // Adjust Value List 几何形状的调整值列表
-  // avList: Record<string, number>[];
+  // paths: string[];
+  line: Line | null;
+  fill: Fill | null;
+  // 几何形状的调整值列表
+  avList: Record<string, string>;
+}
+
+export interface Text {
+  pad: any;
+  writeMode: 'vertical-rl' | 'horizontal-tb';
+  autoFix:
+    | 'no' // 不自动调整
+    | 'shape' // 根据文字调整形状大小（优先保证文字原样输出）
+    | 'normal'; // 文字溢出时编排文字（根据形状大小按比例缩小字号）
+  paragraphs: Paragraph[];
+}
+
+export interface Paragraph {
+  margin: any;
+  indent: any;
+  items: ParagraphItem[];
+}
+
+export interface ParagraphItem {
+  // 字号
+  fontSize: number;
+  // 粗体
+  bold: boolean;
+  // 斜体
+  italic: boolean;
+  // 文本填充
+  fill: Fill;
+  // 文本轮廓
+  line: Line;
+  // 文本阴影
+  shadow?: any;
+  // 文本发光
+  light?: any;
+  // 文本3d旋转
+  rotate3d?: any;
 }

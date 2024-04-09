@@ -1,5 +1,5 @@
 import { Fill } from '../attrs/fill';
-import { CustomGeometry, Line, presetGeometry } from '../attrs/types';
+import { CustomGeometry, Line, Text, presetGeometry } from '../attrs/types';
 
 export interface BaseElement {
   // 元素在slide中的唯一标识
@@ -24,8 +24,6 @@ export interface BaseElement {
   light?: any;
   // 3d旋转
   rotate3d?: any;
-  // 文本框
-  text?: any;
 }
 
 interface Dimension {
@@ -35,18 +33,23 @@ interface Dimension {
   h: number;
 }
 
-
 export interface Shape extends BaseElement {
+  type: 'shape';
+  text: Text | null;
   geometry: CustomGeometry | presetGeometry;
 }
 
-export interface CxnShape extends Shape {
-  geometry: CustomGeometry | presetGeometry;
+export interface CxnShape extends BaseElement {
+  type: 'cxnShape';
+  text: Text | null;
   startId?: string;
   endId?: string;
+  geometry: CustomGeometry | presetGeometry;
 }
 
-export interface Pic extends BaseElement {}
+export interface Pic extends BaseElement {
+  type: 'pic';
+}
 
 export interface Group extends BaseElement {}
 
