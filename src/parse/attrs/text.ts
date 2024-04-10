@@ -23,7 +23,6 @@ function parseTxBodyPr(txBodyPr: XmlNode, slide: SlideBase) {
   const {
     vert,
     numCol = '1',
-    rtlCol,
     anchor,
     anchorCtr,
     lIns = '90000',
@@ -45,36 +44,35 @@ function parseTxBodyPr(txBodyPr: XmlNode, slide: SlideBase) {
     writeMode: vertToCssWriteMode(vert),
     autoFix: parseAutoFix(txBodyPr),
   };
-}
 
-function parseAutoFix(txBodyPr: XmlNode): Text['autoFix'] {
-  const children = txBodyPr.children;
-  for (const child of children) {
-    switch (child.name) {
-      case 'noAutofit':
-        return 'no';
-      case 'spAutoFit':
-        return 'shape';
-      case 'normAutofit':
-        return 'normal';
+  function parseAutoFix(txBodyPr: XmlNode): Text['autoFix'] {
+    const children = txBodyPr.children;
+    for (const child of children) {
+      switch (child.name) {
+        case 'noAutofit':
+          return 'no';
+        case 'spAutoFit':
+          return 'shape';
+        case 'normAutofit':
+          return 'normal';
+      }
+    }
+    return 'no';
+  }
+
+  function vertToCssWriteMode(vert: string): Text['writeMode'] {
+    switch (vert) {
+      // 横向
+      case 'vert':
+        return 'vertical-rl';
+      case 'horz':
+        return 'horizontal-tb';
+      case 'vert90':
+      case 'vert270':
+      case 'wordArtVertRtl': // 文字堆积
+        return 'vertical-rl';
+      default:
+        return 'horizontal-tb';
     }
   }
-  return 'no';
 }
-
-function vertToCssWriteMode(vert: string): Text['writeMode'] {
-  switch (vert) {
-    // 横向
-    case 'vert':
-      return 'vertical-rl';
-    case 'horz':
-      return 'horizontal-tb';
-    case 'vert90':
-    case 'vert270':
-    case 'wordArtVertRtl': // 文字堆积
-      return 'vertical-rl';
-    default:
-      return 'horizontal-tb';
-  }
-}
-

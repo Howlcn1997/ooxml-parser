@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "npm run build && concurrently \"npm run build:watch\" \"npm run run:watch\"",
+    "dev": "concurrently \"pnpm run build:watch\" \"pnpm run live-server\"",
+    "live-server": "live-server ./ --open=./index.html  --port=8080 --host=localhost --watch=./dist/ooxml-parser.umd.js,./index.html",
+    "dev:node": "pnpm run build && concurrently \"pnpm run build:watch\" \"pnpm run run:watch\"",
     "build:watch": "rollup -c rollup.config.ts -w --configPlugin typescript",
     "run:watch": "nodemon --watch dist/ooxml-parser.cjs.js --exec node dist/ooxml-parser.cjs.js",
     "build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript"
@@ -24,6 +26,7 @@
     "@typescript-eslint/parser": "^7.0.2",
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
+    "live-server": "^1.2.2",
     "nodemon": "^3.1.0",
     "rimraf": "^5.0.5",
     "rollup": "^4.12.0",
