@@ -35,7 +35,7 @@ interface Dimension {
 
 export interface Shape extends BaseElement {
   type: 'shape';
-  text: Text | null;
+  content: any;
   geometry: CustomGeometry | presetGeometry;
 }
 

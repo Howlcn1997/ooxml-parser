@@ -4,7 +4,7 @@ import { parseFill } from '@/parse/attrs/fill';
 import { CxnShape } from './type';
 import SlideBase from '../slide/slideBase';
 import parseGeometry from '../attrs/geometry';
-import parseText from '../attrs/text';
+import parseText from '../attrs/textContent';
 
 /**
  * 连接符图形(肘形连接符,直线连接符,曲线连接符...)

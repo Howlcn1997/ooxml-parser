@@ -5,7 +5,7 @@ import { Percentage, angleToDegrees, emusAlphaToOpacity, emusToPercentage } from
 import JSZip from 'jszip';
 import SlideBase from '../slide/slideBase';
 
-export async function parseFill(elementPr: XmlNode, slide: SlideBase): Promise<Fill> {
+export async function parseFill(elementPr: XmlNode, slide: SlideBase, defaultFill?: any): Promise<Fill> {
   for (const child of elementPr.children) {
     switch (child.name) {
       case 'solidFill':
@@ -24,6 +24,8 @@ export async function parseFill(elementPr: XmlNode, slide: SlideBase): Promise<F
   const useBgFill = elementPr?.parent?.attrs?.useBgFill === '1';
   const background = useBgFill && (await slide.background());
   if (background) return background;
+
+  if (defaultFill !== undefined) return defaultFill;
 
   const theme = await slide.theme();
   return { type: 'solid', value: { ...theme.schemeClr.accent1, scheme: 'accent1' } };
@@ -148,7 +150,7 @@ export async function parsePicFill(node: XmlNode, slide: SlideBase): Promise<Pic
  * doc:
  * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.patternfill?view=openxml-3.0.1
  * - https://learn.microsoft.com/zh-cn/dotnet/api/documentformat.openxml.drawing.presetpatternvalues?view=openxml-3.0.1
- * 
+ *
  * TODO: 解析Pattern
  *  - 获取相应pattern的图案
  *  - canvas修改前景色和后景色

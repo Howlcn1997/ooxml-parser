@@ -1,3 +1,4 @@
+import { Percentage } from '@/utils/unit';
 import { Fill } from './fill';
 
 export type Scheme =
@@ -94,7 +95,7 @@ export interface presetGeometry {
   avList: Record<string, string>;
 }
 
-export interface Text {
+export interface TextContent {
   pad: any;
   writeMode: 'vertical-rl' | 'horizontal-tb';
   autoFix:
@@ -105,26 +106,47 @@ export interface Text {
 }
 
 export interface Paragraph {
-  margin: any;
-  indent: any;
-  items: ParagraphItem[];
+  algn: string;
+  margin: {
+    l: number;
+    t: number;
+    r: number;
+    b: number;
+  };
+  lineHeight: Percentage;
+  texts: Text[];
 }
 
-export interface ParagraphItem {
+export interface Text {
+  // 文本内容
+  content: string;
   // 字号
-  fontSize: number;
+  size: number;
+  // 字重
+  weight?: string;
+  // 字间距
+  spacing?: number;
   // 粗体
-  bold: boolean;
+  bold?: boolean;
   // 斜体
-  italic: boolean;
+  italic?: boolean;
+  // 删除线
+  strike?: string;
+  // 下划线
+  underline?: string;
+  // 背景色
+  backColor?: Color;
   // 文本填充
-  fill: Fill;
+  fill?: Fill;
   // 文本轮廓
-  line: Line;
-  // 文本阴影
-  shadow?: any;
-  // 文本发光
-  light?: any;
-  // 文本3d旋转
-  rotate3d?: any;
+  line?: Line;
+  // 效果
+  effect?: {
+    // 阴影
+    shadow?: any;
+    // 发光
+    light?: any;
+    // 3d旋转
+    rotate3d?: any;
+  };
 }

@@ -32,6 +32,10 @@ export class XmlNode {
     return this._children;
   }
 
+  get text() {
+    return this._node.textContent || '';
+  }
+
   get attrs() {
     if (Object.keys(this._attrs).length || !this._node.attributes) return this._attrs;
     this._attrs = {};

@@ -8,7 +8,7 @@ import fontHandler from '@/handlers/fontHandler';
 import embedTransformer from '@/handlers/embedTransformer';
 
 import { parseColor } from './parse/attrs/color';
-import { Color } from './parse/attrs/types';
+import { Color, TextContent } from './parse/attrs/types';
 
 import { Rels } from './parse/slide/types';
 import { emusToPt, ptToCm } from './utils/unit';
@@ -21,6 +21,8 @@ interface ParserConfig {
   lengthHandler: (emus: number) => number;
   // 自定义字体大小处理器
   fontSizeHandler: (emus: number) => number;
+  // 自定义文本内容处理器
+  textContentHandler: (textContent: TextContent) => any;
   // 自定义字体(ttf,woff,etc)处理器
   fontHandler: (file: File) => Promise<string>;
   // 自定义嵌入内容(Excel,Word,image,video,audio,...)处理器
@@ -33,9 +35,8 @@ class OOXMLParser {
   config: ParserConfig;
   defaultConfig: ParserConfig = {
     lengthHandler: emus => Math.round((ptToCm(emusToPt(emus)) + Number.EPSILON) * 100) / 100,
-    // lengthHandler: emus => Math.round((emusToPt(emus) + Number.EPSILON) * 100) / 100,
-    // lengthHandler: emus => emus * 96 / 914400,
-    fontSizeHandler: emus => emusToPt(emus),
+    fontSizeHandler: emus => +emus / 100,
+    textContentHandler: (textContent: TextContent) => textContent,
     fontHandler,
     embedTransformer,
   };
@@ -92,7 +93,7 @@ class OOXMLParser {
     const presentation = await this.presentation();
     const contentTypes = await this.contentTypes();
     // await this.slides(contentTypes.slides);
-    await this.slides([contentTypes.slides[7]]);
+    await this.slides([contentTypes.slides[10]]);
 
     const themePaths = Object.keys(this._themes).sort(sortXml);
     const slidePaths = Object.keys(this._slides).sort(sortXml);
