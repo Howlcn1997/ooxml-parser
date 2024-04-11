@@ -122,8 +122,10 @@ export interface Text {
   content: string;
   // 字号
   size: number;
+  // 字体
+  family?: string;
   // 字重
-  weight?: string;
+  // weight?: string;
   // 字间距
   spacing?: number;
   // 粗体
@@ -135,7 +137,7 @@ export interface Text {
   // 下划线
   underline?: string;
   // 背景色
-  backColor?: Color;
+  highlight?: Color;
   // 文本填充
   fill?: Fill;
   // 文本轮廓

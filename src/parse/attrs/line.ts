@@ -4,7 +4,7 @@ import { Line } from './types';
 import { parseFill } from './fill';
 
 export default async function parseLine(lineNode: XmlNode, slide: SlideBase): Promise<Line> {
-  const w = slide.parser.config.lengthHandler(+lineNode.attrs.w);
+  const w = slide.parser.config.lengthHandler(+(lineNode.attrs.w || '9525'));
   const cap = parseLineCap(lineNode);
   const join = parseLineJoin(lineNode);
   const fill = await parseFill(lineNode, slide);

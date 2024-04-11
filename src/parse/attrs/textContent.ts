@@ -3,6 +3,9 @@ import SlideBase from '../slide/slideBase';
 import { Paragraph, TextContent, Text } from './types';
 import { emusToPercentage } from '@/utils/unit';
 import { parseFill } from './fill';
+import parseLine from './line';
+import { fontFamily } from './font';
+import { removeEmptyIn } from '@/utils/tools';
 
 export default async function parseContent(shape: XmlNode, slide: SlideBase): Promise<TextContent | null> {
   const txBody = shape.child('txBody');
@@ -25,9 +28,9 @@ function textContentPr(txBodyPr: XmlNode, slide: SlideBase): Omit<TextContent, '
 
   const {
     vert,
-    anchor,
-    anchorCtr,
-    numCol = '1',
+    // anchor,
+    // anchorCtr,
+    // numCol = '1',
     lIns = '90000',
     rIns = '90000',
     tIns = '46800',
@@ -149,12 +152,21 @@ function parseParagraphs(pNodes: XmlNode[], slide: SlideBase): Promise<Paragraph
         const fill = await parseFill(runPropsNode, slide, null);
         if (fill) text.fill = fill;
 
+        const lnNode = runPropsNode.child('ln');
+        if (lnNode) text.line = await parseLine(lnNode, slide);
+
+        const family = fontFamily(runPropsNode);
+        if (family) text.family = family;
+
+        const highlightNode = runPropsNode.child('highlight');
+        if (highlightNode) text.highlight = await parseFill(highlightNode, slide, null);
+
         const tNode = runNode.child('t') as XmlNode;
-        return {
+        return removeEmptyIn({
           ...text,
           content: tNode.text,
           size: fszHandler(+size),
-        };
+        });
       })
     );
   }
