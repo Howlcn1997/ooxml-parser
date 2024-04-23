@@ -5,7 +5,9 @@ import { Percentage, angleToDegrees, emusAlphaToOpacity, emusToPercentage } from
 import JSZip from 'jszip';
 import SlideBase from '../slide/slideBase';
 
-export async function parseFill(elementPr: XmlNode, slide: SlideBase, defaultFill?: any): Promise<Fill> {
+export async function parseFill(elementPr: XmlNode | null, slide: SlideBase, defaultFill?: any): Promise<Fill | null> {
+  if (!elementPr) return null;
+
   for (const child of elementPr.children) {
     switch (child.name) {
       case 'solidFill':
@@ -62,7 +64,7 @@ export async function parseGradientFill(node: XmlNode, slide: SlideBase | null):
         type: 'linear',
         rotateWithShape,
         gsList: gradientStopList,
-        angle: angleToDegrees(linear.attrs.ang),
+        angle: angleToDegrees(+linear.attrs.ang),
       },
     };
 

@@ -6,11 +6,11 @@ import { parseFill } from './fill';
 import parseLine from './line';
 import { fontFamily } from './font';
 import { removeEmptyIn } from '@/utils/tools';
+import { parseEffect } from './effect';
 
-export default async function parseContent(shape: XmlNode, slide: SlideBase): Promise<TextContent | null> {
+export default async function parseContent(shape: XmlNode, slide: SlideBase): Promise<TextContent | undefined> {
   const txBody = shape.child('txBody');
-  if (!txBody) return null;
-  console.log(shape._node);
+  if (!txBody) return;
   // 正文属性
   const contentPr = textContentPr(txBody.child('bodyPr') as XmlNode, slide);
   // 文本列表样式
@@ -18,7 +18,7 @@ export default async function parseContent(shape: XmlNode, slide: SlideBase): Pr
   // 文本段落
   const paragraphs = await parseParagraphs(txBody.allChild('p') as XmlNode[], slide);
 
-  if (!paragraphs.length) return null;
+  if (!paragraphs.length) return;
 
   return { ...contentPr, paragraphs };
 }
@@ -149,17 +149,15 @@ function parseParagraphs(pNodes: XmlNode[], slide: SlideBase): Promise<Paragraph
         if (strike) text.strike = strike;
         if (spc) text.spacing = fszHandler(+spc);
 
-        const fill = await parseFill(runPropsNode, slide, null);
-        if (fill) text.fill = fill;
+        text.fill = await parseFill(runPropsNode, slide, null);
 
-        const lnNode = runPropsNode.child('ln');
-        if (lnNode) text.line = await parseLine(lnNode, slide);
+        text.line = await parseLine(runPropsNode.child('ln'), slide);
 
-        const family = fontFamily(runPropsNode);
-        if (family) text.family = family;
+        text.family = fontFamily(runPropsNode);
 
-        const highlightNode = runPropsNode.child('highlight');
-        if (highlightNode) text.highlight = await parseFill(highlightNode, slide, null);
+        text.highlight = await parseFill(runPropsNode.child('highlight'), slide, null);
+
+        text.effect = await parseEffect(runPropsNode.child('effectLst'), slide);
 
         const tNode = runNode.child('t') as XmlNode;
         return removeEmptyIn({

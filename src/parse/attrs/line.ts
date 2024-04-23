@@ -1,13 +1,15 @@
 import { XmlNode } from '@/xmlNode';
 import SlideBase from '../slide/slideBase';
 import { Line } from './types';
-import { parseFill } from './fill';
+import { Fill, parseFill } from './fill';
 
-export default async function parseLine(lineNode: XmlNode, slide: SlideBase): Promise<Line> {
+export default async function parseLine(lineNode: XmlNode | null, slide: SlideBase): Promise<Line | null> {
+  if (!lineNode) return null;
+
   const w = slide.parser.config.lengthHandler(+(lineNode.attrs.w || '9525'));
   const cap = parseLineCap(lineNode);
   const join = parseLineJoin(lineNode);
-  const fill = await parseFill(lineNode, slide);
+  const fill = (await parseFill(lineNode, slide)) as Fill;
 
   return { w, cap, join, fill };
 }

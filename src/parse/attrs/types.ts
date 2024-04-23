@@ -143,12 +143,24 @@ export interface Text {
   // 文本轮廓
   line?: Line;
   // 效果
-  effect?: {
-    // 阴影
-    shadow?: any;
-    // 发光
-    light?: any;
-    // 3d旋转
-    rotate3d?: any;
-  };
+  effect?: TextEffect;
 }
+
+export interface Effect {
+  // 阴影
+  shadow?: any;
+  // 映像
+  reflection?: any;
+  // 发光
+  glow?: any;
+  // 柔化边缘
+  softEdge?: any;
+  // 3d格式
+  bevel?: any;
+  // 3d旋转
+  rotate3d?: any;
+}
+
+export interface TextEffect extends Effect {}
+
+export interface ShapeEffect extends Effect {}

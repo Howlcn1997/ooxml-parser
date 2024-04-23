@@ -11,7 +11,7 @@ export default async function parseSlideBackground(slide: SlideBase): Promise<Ba
   const slideBg = slideXmlNode.child('cSld')?.child('bg');
 
   const slideBgPr = slideBg?.child('bgPr');
-  if (slideBgPr) return await parseFill(slideBgPr as XmlNode, slide);
+  if (slideBgPr) return (await parseFill(slideBgPr as XmlNode, slide)) as Fill;
 
   const slideBgRef = slideBg?.child('bgRef');
   if (slideBgRef) return await parseBgRef(slideBgRef as XmlNode, slide);
@@ -28,12 +28,12 @@ export default async function parseSlideBackground(slide: SlideBase): Promise<Ba
 
 /**
  * doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.presentation.backgroundstylereference?view=openxml-3.0.1
- * 
+ *
  * TODO: 完整解析 bgRef
  */
 export async function parseBgRef(node: XmlNode, slide: SlideBase): Promise<Fill> {
   const idx = +node.attrs.idx;
-  /** 
+  /**
    * fmtScheme 中的phClr为占位符,需要用brReg中的颜色替换
    */
   if (idx > 0 && idx < 1000) {

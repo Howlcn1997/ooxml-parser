@@ -23,8 +23,8 @@ export function ptToCm(pt: number) {
   return (pt * 2.54) / 72;
 }
 
-export function angleToDegrees(angle: string): number {
-  return Math.round(+angle / 60000);
+export function angleToDegrees(angle: number): number {
+  return Math.round(angle / 60000);
 }
 
 export type Percentage = number; // [0, 1] 0% - 100%
