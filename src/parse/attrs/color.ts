@@ -41,7 +41,6 @@ export async function parseColor(node: XmlNode, slide: SlideBase | null, opts?: 
         break;
       case 'prstClr':
         color.rgba = tinycolor(`rgb (${presetColor[child.attrs.val] || '0,0,0'})`);
-        console.log('prstClr', color.rgba);
         break;
       default:
         continue;

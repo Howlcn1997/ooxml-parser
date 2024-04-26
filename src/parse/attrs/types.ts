@@ -148,19 +148,64 @@ export interface Text {
 
 export interface Effect {
   // 阴影
-  shadow?: any;
+  shadow?: Shadow;
   // 映像
-  reflection?: any;
+  reflection?: Reflection;
   // 发光
-  glow?: any;
+  glow?: Glow;
   // 柔化边缘
-  softEdge?: any;
+  softEdge?: SoftEdge;
   // 3d格式
-  bevel?: any;
+  bevel?: Bevel;
   // 3d旋转
-  rotate3d?: any;
+  rotate3d?: Rotate3d;
+}
+
+export enum ShadowType {
+  Preset = 'preset',
+  Inner = 'inner',
+  Outer = 'outer',
+}
+
+export interface Shadow {
+  type: ShadowType;
+  blurRad: number;
+  dist: number;
+  dir: number;
+  scale: Percentage;
+  color: Color;
 }
 
 export interface TextEffect extends Effect {}
 
 export interface ShapeEffect extends Effect {}
+/**
+ * 映像 / 倒影
+ * doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.reflection?view=openxml-3.0.1
+ * 
+ * WPS,PowerPoint中的将startPos和endPos合并为“大小”
+ */
+export interface Reflection {
+  algn: 'b' | 't' | 'l' | 'r' | 'tl' | 'tr' | 'bl' | 'br';
+  blurRad: number;
+  // 映像方向
+  dir: number;
+  // 映像距离
+  dist: number;
+  // 渐变开始透明度
+  startAlpha: Percentage;
+  // 渐变结束透明度
+  endAlpha: Percentage;
+  // 透明渐变开始位置
+  startPos: Percentage;
+  // 透明渐变结束位置
+  endPos: Percentage;
+}
+
+export interface Glow {}
+
+export interface SoftEdge {}
+
+export interface Bevel {}
+
+export interface Rotate3d {}

@@ -1,5 +1,5 @@
 import { XmlNode } from '@/xmlNode';
-import { Effect } from './types';
+import { Effect, Glow, Reflection, Shadow, ShadowType, SoftEdge } from './types';
 import SlideBase from '../slide/slideBase';
 import { parseColor } from './color';
 import { angleToDegrees, emusToPercentage } from '@/utils/unit';
@@ -13,43 +13,44 @@ export async function parseEffect(effectLst: XmlNode | null, slide: SlideBase): 
   if (children.length === 0) return null;
 
   for (const child of children) {
-    console.log('effect', child._node);
     switch (child.name) {
       case 'prstShdw':
         effect.shadow = await presetShadow(child, slide);
+        break;
       case 'innerShdw':
         effect.shadow = await innerShadow(child, slide);
+        break;
       case 'outerShdw':
         effect.shadow = await outerShadow(child, slide);
         break;
       case 'reflection':
+        effect.shadow = await reflection(child, slide);
+        break;
       case 'glow':
+        effect.glow = await glow(child, slide);
+        break;
       case 'softEdge':
+        effect.softEdge = await softEdge(child, slide);
+        break;
       case 'blur':
     }
   }
   return effect;
 }
 
-async function presetShadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']> {
-  console.log('presetShadow', node._node);
+async function presetShadow(node: XmlNode, slide: SlideBase): Promise<Shadow> {
+  return { type: ShadowType.Preset, ...(await shadow(node, slide)) };
 }
 
-async function innerShadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']> {
-  return {
-    type: 'inner',
-    ...(await shadow(node, slide)),
-  };
+async function innerShadow(node: XmlNode, slide: SlideBase): Promise<Shadow> {
+  return { type: ShadowType.Inner, ...(await shadow(node, slide)) };
 }
 
-async function outerShadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']> {
-  return {
-    type: 'outer',
-    ...(await shadow(node, slide)),
-  };
+async function outerShadow(node: XmlNode, slide: SlideBase): Promise<Shadow> {
+  return { type: ShadowType.Outer, ...(await shadow(node, slide)) };
 }
 
-async function shadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']> {
+async function shadow(node: XmlNode, slide: SlideBase): Promise<Omit<Shadow, 'type'>> {
   const { blurRad = '0', dist = '0', dir = '0', sx = '100000' } = node.attrs;
   return {
     // 模糊度
@@ -62,4 +63,20 @@ async function shadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']
     scale: emusToPercentage(+sx),
     color: await parseColor(node, slide),
   };
+}
+
+async function reflection(node: XmlNode, slide: SlideBase): Promise<Reflection> {
+  const { blurRad = '0', dist = '0', dir = '0', sx = '100000' } = node.attrs;
+  console.log('🚀 ~ reflection ~ node.attrs:', node.attrs);
+  return {};
+}
+
+async function glow(node: XmlNode, slide: SlideBase): Promise<Glow> {
+  console.log('🚀 ~ glow ~ node:', node._node);
+  return {};
+}
+
+async function softEdge(node: XmlNode, slide: SlideBase): Promise<SoftEdge> {
+  console.log('🚀 ~ softEdge ~ node:', node._node);
+  return {};
 }

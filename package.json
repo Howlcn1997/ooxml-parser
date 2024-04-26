@@ -8,7 +8,7 @@
     "live-server": "live-server ./ --open=./index.html --port=8080 --watch=./dist/ooxml-parser.umd.js,./index.html",
     "dev:node": "pnpm run build && concurrently \"pnpm run build:watch\" \"pnpm run run:watch\"",
     "build:watch": "rollup -c rollup.config.ts -w --configPlugin typescript",
-    "run:watch": "nodemon --watch dist/ooxml-parser.cjs.js --exec node dist/ooxml-parser.cjs.js",
+    "run:watch": "nodemon --watch dist/ooxml-parser.cjs.js,assets/simple.pptx --exec node dist/ooxml-parser.cjs.js",
     "build": "rimraf dist && rollup -c rollup.config.ts --configPlugin typescript"
   },
   "keywords": [],
