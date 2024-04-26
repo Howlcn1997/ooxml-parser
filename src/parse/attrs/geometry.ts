@@ -4,6 +4,7 @@ import { CustomGeometry, Xfrm, presetGeometry } from './types';
 import parsePath from './path';
 import { parseFill } from './fill';
 import parseLine from './line';
+import { removeEmptyIn } from '@/utils/tools';
 // import { emusToPercentage } from '@/utils/unit';
 
 export default async function parseGeometry(
@@ -12,15 +13,15 @@ export default async function parseGeometry(
   xfrm: Xfrm
 ): Promise<CustomGeometry | presetGeometry> {
   const lineXmlNode = spPr.child('ln');
-  const line = lineXmlNode ? await parseLine(lineXmlNode, slide) : null;
-  const fill = lineXmlNode ? await parseFill(lineXmlNode, slide) : null;
+  const line = await parseLine(lineXmlNode, slide);
+  const fill = await parseFill(lineXmlNode, slide);
 
   const custGeom = spPr.child('custGeom');
 
   if (custGeom) {
     const pathXmlNodes = custGeom.child('pathLst')?.allChild('path') as XmlNode[];
     const paths = pathXmlNodes.map(pathXmlNode => parsePath(pathXmlNode, slide, xfrm));
-    return { name: 'custom', fill, line, paths } as CustomGeometry;
+    return removeEmptyIn({ name: 'custom', fill, line, paths });
   }
 
   // TODO: presetName 对应的名称解析为paths
@@ -30,5 +31,5 @@ export default async function parseGeometry(
   const gdNodes = prstGeom.child('avLst')?.allChild('gd') || [];
   const avList = gdNodes.reduce((acc, gd: XmlNode) => ({ ...acc, [gd.attrs.name]: gd.attrs.fmla }), {});
 
-  return { name, fill, line, avList };
+  return removeEmptyIn({ name, fill, line, avList });
 }

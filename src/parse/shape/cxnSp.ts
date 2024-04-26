@@ -1,10 +1,11 @@
 import { XmlNode } from '@/xmlNode';
 import parseXfrm from '@/parse/attrs/xfrm';
-import { parseFill } from '@/parse/attrs/fill';
+import { Fill, parseFill } from '@/parse/attrs/fill';
 import { CxnShape } from './type';
 import SlideBase from '../slide/slideBase';
 import parseGeometry from '../attrs/geometry';
-import parseText from '../attrs/textContent';
+import parseContent from '../attrs/textContent';
+import { removeEmptyIn } from '@/utils/tools';
 
 /**
  * 连接符图形(肘形连接符,直线连接符,曲线连接符...)
@@ -21,11 +22,11 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<C
   const endId = cNvCxnSpPr.child('endCxn')?.attrs?.id;
 
   const shapeProps = shape.child('spPr') as XmlNode;
-  const fill = await parseFill(shapeProps, slide);
+  const fill = (await parseFill(shapeProps, slide)) as Fill;
   const geometry = await parseGeometry(shapeProps, slide, xfrm);
-  const text = await parseText(shape, slide);
+  const content = await parseContent(shape, slide);
 
-  return {
+  return removeEmptyIn<CxnShape>({
     id,
     ...(startId ? { startId } : {}),
     ...(endId ? { endId } : {}),
@@ -33,8 +34,8 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<C
     flipH,
     flipV,
     fill,
-    text,
+    content,
     geometry,
     dimension: { w, h, left, top },
-  };
+  });
 }

@@ -1,5 +1,5 @@
 import { Fill } from '../attrs/fill';
-import { CustomGeometry, Line, Text, presetGeometry } from '../attrs/types';
+import { CustomGeometry, Line, TextContent, presetGeometry } from '../attrs/types';
 
 export interface BaseElement {
   // 元素在slide中的唯一标识
@@ -41,7 +41,7 @@ export interface Shape extends BaseElement {
 
 export interface CxnShape extends BaseElement {
   type: 'cxnShape';
-  text: Text | null;
+  content?: TextContent;
   startId?: string;
   endId?: string;
   geometry: CustomGeometry | presetGeometry;

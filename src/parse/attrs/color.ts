@@ -1,8 +1,9 @@
 import { XmlNode } from '@/xmlNode';
-import { Color, ColorTransform } from '@/parse/attrs/types';
+import { Color, ColorTransform, Rgba } from '@/parse/attrs/types';
 import tinycolor from 'tinycolor2';
 import { emusToPercentage } from '@/utils/unit';
 import SlideBase from '../slide/slideBase';
+import { presetColor } from '@/config/presetColor';
 interface ParseColorOptions {
   // 是否将 ColorTransform 合并到 rgba 中
   transformToRgba?: boolean;
@@ -16,12 +17,12 @@ const defaultOptions: ParseColorOptions = {
 };
 
 /**
- * prNode 中必须含有color相关属性，例如srgbClr、schemeClr等
+ * node 中必须含有color相关属性，例如srgbClr、schemeClr等
  * @param mergeTrans 是否将 ColorTransform 合并到 rgba 中
  * @returns
  */
-export async function parseColor(prNode: XmlNode, slide: SlideBase | null, opts?: ParseColorOptions): Promise<Color> {
-  const children = prNode.children;
+export async function parseColor(node: XmlNode, slide: SlideBase | null, opts?: ParseColorOptions): Promise<Color> {
+  const children = node.children;
   const color: Record<string, any> = {};
 
   const options = { ...defaultOptions, ...(opts || {}) };
@@ -37,6 +38,10 @@ export async function parseColor(prNode: XmlNode, slide: SlideBase | null, opts?
         break;
       case 'srgbClr':
         color.rgba = tinycolor(`#${child.attrs.val}`);
+        break;
+      case 'prstClr':
+        color.rgba = tinycolor(`rgb (${presetColor[child.attrs.val] || '0,0,0'})`);
+        console.log('prstClr', color.rgba);
         break;
       default:
         continue;

@@ -1,6 +1,6 @@
 import { XmlNode } from '@/xmlNode';
 import parseXfrm from '@/parse/attrs/xfrm';
-import { parseFill } from '@/parse/attrs/fill';
+import { Fill, parseFill } from '@/parse/attrs/fill';
 import { Shape } from './type';
 import SlideBase from '../slide/slideBase';
 import extractGeometry from '../attrs/geometry';
@@ -13,7 +13,7 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<S
   const id = ((shape.child('nvSpPr') as XmlNode).child('cNvPr') as XmlNode).attrs.id;
 
   const shapeProps = shape.child('spPr') as XmlNode;
-  const fill = await parseFill(shapeProps, slide);
+  const fill = (await parseFill(shapeProps, slide)) as Fill;
   const geometry = await extractGeometry(shapeProps, slide, xfrm);
   const content = await parseContent(shape, slide);
   return {
