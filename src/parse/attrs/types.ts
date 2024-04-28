@@ -169,10 +169,15 @@ export enum ShadowType {
 
 export interface Shadow {
   type: ShadowType;
+  // 模糊度
   blurRad: number;
+  // 模糊距离
   dist: number;
+  // 模糊角度
   dir: number;
+  // 阴影大小缩放
   scale: Percentage;
+  // 阴影颜色
   color: Color;
 }
 
@@ -182,16 +187,18 @@ export interface ShapeEffect extends Effect {}
 /**
  * 映像 / 倒影
  * doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.reflection?view=openxml-3.0.1
- * 
+ *
  * WPS,PowerPoint中的将startPos和endPos合并为“大小”
  */
 export interface Reflection {
-  algn: 'b' | 't' | 'l' | 'r' | 'tl' | 'tr' | 'bl' | 'br';
+  align: string;
   blurRad: number;
   // 映像方向
   dir: number;
   // 映像距离
   dist: number;
+  // 映像大小
+  scale: Percentage;
   // 渐变开始透明度
   startAlpha: Percentage;
   // 渐变结束透明度
@@ -200,11 +207,21 @@ export interface Reflection {
   startPos: Percentage;
   // 透明渐变结束位置
   endPos: Percentage;
+  // 与形状一起旋转
+  rotWithShape: boolean;
 }
 
-export interface Glow {}
+export interface Glow {
+  // 发光半径(大小)
+  radius: number;
+  // 发光颜色
+  color: Color;
+}
 
-export interface SoftEdge {}
+export interface SoftEdge {
+  // 发光半径(大小)
+  radius: number;
+}
 
 export interface Bevel {}
 

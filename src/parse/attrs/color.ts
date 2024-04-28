@@ -1,5 +1,5 @@
 import { XmlNode } from '@/xmlNode';
-import { Color, ColorTransform, Rgba } from '@/parse/attrs/types';
+import { Color, ColorTransform } from '@/parse/attrs/types';
 import tinycolor from 'tinycolor2';
 import { emusToPercentage } from '@/utils/unit';
 import SlideBase from '../slide/slideBase';
@@ -9,9 +9,9 @@ interface ParseColorOptions {
   transformToRgba?: boolean;
   // schemeClr 颜色对应关系
   clrMap?: Record<string, string>;
-  defaultColor?: any;
+  defaultColor?: Color;
 }
-const defaultOptions: ParseColorOptions = {
+const defaultOptions = {
   transformToRgba: true,
   defaultColor: { rgba: { r: 0, g: 0, b: 0, a: 1 }, transform: {} },
 };
@@ -23,6 +23,7 @@ const defaultOptions: ParseColorOptions = {
  */
 export async function parseColor(node: XmlNode, slide: SlideBase | null, opts?: ParseColorOptions): Promise<Color> {
   const children = node.children;
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const color: Record<string, any> = {};
 
   const options = { ...defaultOptions, ...(opts || {}) };
@@ -63,7 +64,7 @@ export async function parseColor(node: XmlNode, slide: SlideBase | null, opts?: 
     }
   }
 
-  return options.defaultColor;
+  return options.defaultColor as Color;
 }
 
 function getTransform(node: XmlNode): ColorTransform {

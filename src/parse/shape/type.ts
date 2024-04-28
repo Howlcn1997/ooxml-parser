@@ -1,5 +1,5 @@
 import { Fill } from '../attrs/fill';
-import { CustomGeometry, Line, TextContent, presetGeometry } from '../attrs/types';
+import { CustomGeometry, Effect, Line, TextContent, presetGeometry } from '../attrs/types';
 
 export interface BaseElement {
   // 元素在slide中的唯一标识
@@ -18,12 +18,8 @@ export interface BaseElement {
   line?: Line;
   // 位置尺寸
   dimension?: Dimension;
-  // 阴影
-  shadow?: any;
-  // 发光
-  light?: any;
-  // 3d旋转
-  rotate3d?: any;
+  // 效果
+  effect?: Effect;
 }
 
 interface Dimension {

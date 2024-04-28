@@ -5,6 +5,8 @@ import { Shape } from './type';
 import SlideBase from '../slide/slideBase';
 import extractGeometry from '../attrs/geometry';
 import parseContent from '../attrs/textContent';
+import { removeEmptyIn } from '@/utils/tools';
+import { parseEffect } from '../attrs/effect';
 
 export default async function parse(shape: XmlNode, slide: SlideBase): Promise<Shape> {
   const xfrm = await parseXfrm(shape, slide);
@@ -16,14 +18,16 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<S
   const fill = (await parseFill(shapeProps, slide)) as Fill;
   const geometry = await extractGeometry(shapeProps, slide, xfrm);
   const content = await parseContent(shape, slide);
-  return {
+  const effect = await parseEffect(shapeProps.child('effectLst'), slide) || undefined
+  return removeEmptyIn({
     id,
     type: 'shape',
     flipH,
     flipV,
     fill,
+    effect,
     content: content && slide.parser.config.textContentHandler(content),
     geometry,
     dimension: { w, h, left, top },
-  };
+  });
 }

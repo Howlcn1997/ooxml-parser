@@ -1,5 +1,8 @@
 import JSZip from 'jszip';
+import jsdom from 'jsdom';
 import { XmlNode } from './xmlNode';
+import { runtimeEnv } from './utils/env';
+import { RuntimeEnv } from './types';
 
 export async function readXmlFile(zip: JSZip, filename: string, log: boolean = false): Promise<XmlNode> {
   const zipFile = zip.file(filename);
@@ -14,5 +17,9 @@ export async function readXmlFile(zip: JSZip, filename: string, log: boolean = f
 }
 
 export function xmlParser(xmlString: string) {
-  return new DOMParser().parseFromString(xmlString, 'text/xml');
+  const env = runtimeEnv();
+  if (env === RuntimeEnv.Browser) {
+    return new DOMParser().parseFromString(xmlString, 'text/xml');
+  }
+  return new jsdom.JSDOM(xmlString, { contentType: 'text/xml' }).window.document;
 }
