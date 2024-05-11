@@ -1,6 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-explicit-any */
 import JSZip from 'jszip';
-import { loadNodeModule, runtimeEnv } from '@/utils/env';
 import { ContentTypes, Presentation, Theme } from '@/types';
 import { readXmlFile } from '@/readXmlFile';
 import { XmlNode } from '@/xmlNode';
@@ -34,7 +33,7 @@ class OOXMLParser {
 
   config: ParserConfig;
   defaultConfig: ParserConfig = {
-    lengthHandler: emus => Math.round((ptToCm(emusToPt(emus)) + Number.EPSILON) * 100) / 100,
+    lengthHandler: emus => Math.round((emusToPt(emus) + Number.EPSILON) * 100) / 100,
     fontSizeHandler: emus => +emus / 100,
     textContentHandler: (textContent: TextContent) => textContent,
     fontHandler,
@@ -61,16 +60,7 @@ class OOXMLParser {
   }
 
   async loadFile(file: File): Promise<JSZip> {
-    const env = runtimeEnv();
-    if (env === 'node') {
-      const fs = loadNodeModule<typeof import('fs')>('fs');
-      const path = loadNodeModule<typeof import('path')>('path');
-      const file = fs.readFileSync(path.join(__dirname, '../assets/ppt/simple.pptx'));
-      this.zip = await JSZip.loadAsync(file);
-    } else {
-      this.zip = await JSZip.loadAsync(file);
-    }
-    return this.zip;
+    return (this.zip = await JSZip.loadAsync(file));
   }
 
   async readXmlFile(path: string, log?: boolean): Promise<XmlNode> {

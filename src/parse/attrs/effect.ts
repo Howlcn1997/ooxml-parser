@@ -1,8 +1,9 @@
 import { XmlNode } from '@/xmlNode';
-import { Effect } from './types';
+import { Effect, Glow, Reflection, Shadow, ShadowType, SoftEdge } from './types';
 import SlideBase from '../slide/slideBase';
 import { parseColor } from './color';
 import { angleToDegrees, emusToPercentage } from '@/utils/unit';
+import { removeEmptyIn } from '@/utils/tools';
 
 export async function parseEffect(effectLst: XmlNode | null, slide: SlideBase): Promise<Effect | null> {
   if (!effectLst) return null;
@@ -13,53 +14,77 @@ export async function parseEffect(effectLst: XmlNode | null, slide: SlideBase): 
   if (children.length === 0) return null;
 
   for (const child of children) {
-    console.log('effect', child._node);
     switch (child.name) {
       case 'prstShdw':
         effect.shadow = await presetShadow(child, slide);
+        break;
       case 'innerShdw':
         effect.shadow = await innerShadow(child, slide);
+        break;
       case 'outerShdw':
         effect.shadow = await outerShadow(child, slide);
         break;
       case 'reflection':
+        effect.reflection = await reflection(child, slide);
+        break;
       case 'glow':
+        effect.glow = await glow(child, slide);
+        break;
       case 'softEdge':
-      case 'blur':
+        effect.softEdge = softEdge(child, slide);
+        break;
     }
   }
   return effect;
 }
 
-async function presetShadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']> {
-  console.log('presetShadow', node._node);
+async function presetShadow(node: XmlNode, slide: SlideBase): Promise<Shadow> {
+  return { type: ShadowType.Preset, ...(await shadow(node, slide)) };
 }
 
-async function innerShadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']> {
-  return {
-    type: 'inner',
-    ...(await shadow(node, slide)),
-  };
+async function innerShadow(node: XmlNode, slide: SlideBase): Promise<Shadow> {
+  return { type: ShadowType.Inner, ...(await shadow(node, slide)) };
 }
 
-async function outerShadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']> {
-  return {
-    type: 'outer',
-    ...(await shadow(node, slide)),
-  };
+async function outerShadow(node: XmlNode, slide: SlideBase): Promise<Shadow> {
+  return { type: ShadowType.Outer, ...(await shadow(node, slide)) };
 }
 
-async function shadow(node: XmlNode, slide: SlideBase): Promise<Effect['shadow']> {
-  const { blurRad = '0', dist = '0', dir = '0', sx = '100000' } = node.attrs;
+async function shadow(node: XmlNode, slide: SlideBase): Promise<Omit<Shadow, 'type'>> {
+  const { blurRad = '0', dist = '0', dir = '0', sx, sy } = node.attrs;
   return {
-    // 模糊度
     blurRad: slide.parser.config.lengthHandler(+blurRad),
-    // 模糊距离
     dist: slide.parser.config.lengthHandler(+dist),
-    // 模糊角度
     dir: angleToDegrees(+dir),
-    // 阴影大小缩放  实际上应该有sx、sy两个属性，但阴影一般都为等比例缩放,此处做简化实现故仅使用sx来作为缩放大小
-    scale: emusToPercentage(+sx),
+    // 实际上应该有sx、sy两个属性，但阴影一般都为等比例缩放,此处做简化实现故仅使用sx来作为缩放大小
+    scale: emusToPercentage(+(sx || sy || '100000')),
     color: await parseColor(node, slide),
   };
+}
+
+async function reflection(node: XmlNode, slide: SlideBase): Promise<Reflection> {
+  const { algn, dist, dir, blurRad, sx, sy, stA, endA, stPos, endPos, rotWithShape } = node.attrs;
+  return removeEmptyIn({
+    align: algn,
+    blurRad: slide.parser.config.lengthHandler(+blurRad),
+    dir: angleToDegrees(+dir || 0),
+    dist: slide.parser.config.lengthHandler(+dist),
+    startAlpha: emusToPercentage(+stA),
+    endAlpha: emusToPercentage(+endA),
+    scale: emusToPercentage(+(sx || sy || '100000')),
+    startPos: emusToPercentage(+stPos),
+    endPos: emusToPercentage(+endPos),
+    rotWithShape: rotWithShape === '1',
+  });
+}
+
+async function glow(node: XmlNode, slide: SlideBase): Promise<Glow> {
+  return {
+    radius: slide.parser.config.lengthHandler(+node.attrs.rad),
+    color: await parseColor(node, slide),
+  };
+}
+
+function softEdge(node: XmlNode, slide: SlideBase): SoftEdge {
+  return { radius: slide.parser.config.lengthHandler(+node.attrs.rad) };
 }

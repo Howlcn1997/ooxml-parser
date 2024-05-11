@@ -43,7 +43,7 @@ export async function parseBgRef(node: XmlNode, slide: SlideBase): Promise<Fill>
     // theme.fmtScheme.bgFillStyleLst[idx - 1001]
   }
 
-  const color = await parseColor(node, slide, { defaultColor: null });
+  const color = await parseColor(node, slide, { defaultColor: undefined });
   if (color) return { type: 'solid', value: color };
 
   return {
