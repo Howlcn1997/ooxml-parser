@@ -63,12 +63,12 @@ class OOXMLParser {
     return (this.zip = await JSZip.loadAsync(file));
   }
 
-  async readXmlFile(path: string, log?: boolean): Promise<XmlNode> {
+  async readXmlFile(path: string): Promise<XmlNode> {
     // TODO: 当zip未加载时, 则延迟响应, 当超时时, 抛出异常
     if (!this.zip) throw new Error('No zip file loaded, please loadFile first');
     if (this._fileCache.has(path)) return this._fileCache.get(path);
 
-    const theFile = await readXmlFile(this.zip, path, log);
+    const theFile = await readXmlFile(this.zip, path);
     this._fileCache.set(path, theFile);
     return theFile;
   }

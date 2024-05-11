@@ -9,12 +9,14 @@ import { Xfrm } from './types';
  * 解析 xfrm 元素
  */
 export async function parseXfrm(shape: XmlNode, slide: SlideBase): Promise<Xfrm> {
-  const xfrm = (shape.child('spPr') as XmlNode).child('xfrm') as XmlNode;
+  const shapePropNode = shape.child(`${shape.name}Pr`);
 
-  const { flipV, flipH } = xfrm.attrs || {};
+  const xfrmNode = (shapePropNode ? shapePropNode.child('xfrm') : shape.child('xfrm')) as XmlNode;
 
-  const { x, y } = xfrm.child('off')?.attrs || { x: '0', y: '0' };
-  const { cx, cy } = xfrm.child('ext')?.attrs || { cx: '0', cy: '0' };
+  const { flipV, flipH } = xfrmNode.attrs || {};
+
+  const { x, y } = xfrmNode.child('off')?.attrs || { x: '0', y: '0' };
+  const { cx, cy } = xfrmNode.child('ext')?.attrs || { cx: '0', cy: '0' };
 
   let left = parseInt(x);
   let top = parseInt(y);
@@ -23,10 +25,10 @@ export async function parseXfrm(shape: XmlNode, slide: SlideBase): Promise<Xfrm>
 
   const groupXfrm = shape.parent?.child('grpSpPr')?.child('xfrm');
   if (groupXfrm) {
-    const off = xfrm.child('off')?.attrs || { x: '0', y: '0' };
-    const ext = xfrm.child('ext')?.attrs || { cx: '0', cy: '0' };
-    const chOff = xfrm.child('chOff')?.attrs || { x: '0', y: '0' };
-    const chExt = xfrm.child('chExt')?.attrs || { cx: cx, cy: cy };
+    const off = groupXfrm.child('off')?.attrs || { x: '0', y: '0' };
+    const ext = groupXfrm.child('ext')?.attrs || { cx: '0', cy: '0' };
+    const chOff = groupXfrm.child('chOff')?.attrs || { x: '0', y: '0' };
+    const chExt = groupXfrm.child('chExt')?.attrs || { cx: cx, cy: cy };
 
     const cxRatio = +ext.cx / +chExt.cx;
     const cyRatio = +ext.cy / +chExt.cy;
