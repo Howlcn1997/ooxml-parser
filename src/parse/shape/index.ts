@@ -4,6 +4,7 @@ import spParse from '@/parse/shape/sp';
 import cxnSpParse from '@/parse/shape/cxnSp';
 import picParse from '@/parse/shape/pic';
 import groupParse from '@/parse/shape/group';
+import graphicFrameParse from '@/parse/shape/graphicFrame';
 
 import { Element } from './type';
 import Slide from '../slide/slideBase';
@@ -21,8 +22,9 @@ export default async function parseShape(shape: XmlNode, slide: Slide): Promise<
     case 'cxnSp':
       return await cxnSpParse(shape, slide);
     case 'graphicFrame':
-      return null;
+      return await graphicFrameParse(shape, slide);
     case 'AlternateContent':
+      // console.log('🚀 ~ parseShape ~ AlternateContent:', shape._node);
       return null;
     case 'grpSp':
       return await groupParse(shape, slide);

@@ -1,13 +1,11 @@
 import { XmlNode } from '@/xmlNode';
 import SlideBase from '../slide/slideBase';
 import { CustomGeometry, Xfrm, presetGeometry } from './types';
-import parsePath from './path';
-import { parseFill } from './fill';
-import parseLine from './line';
-import { removeEmptyIn } from '@/utils/tools';
-// import { emusToPercentage } from '@/utils/unit';
+import { parseFill, parseLine, parsePath } from '@/parse/attrs';
 
-export default async function parseGeometry(
+import { removeEmptyIn } from '@/utils/tools';
+
+export async function parseGeometry(
   spPr: XmlNode,
   slide: SlideBase,
   xfrm: Xfrm
@@ -21,7 +19,7 @@ export default async function parseGeometry(
   if (custGeom) {
     const pathXmlNodes = custGeom.child('pathLst')?.allChild('path') as XmlNode[];
     const paths = pathXmlNodes.map(pathXmlNode => parsePath(pathXmlNode, slide, xfrm));
-    return removeEmptyIn({ name: 'custom', fill, line, paths });
+    return removeEmptyIn<CustomGeometry>({ name: 'custom', fill, line, paths });
   }
 
   // TODO: presetName 对应的名称解析为paths
@@ -31,5 +29,5 @@ export default async function parseGeometry(
   const gdNodes = prstGeom.child('avLst')?.allChild('gd') || [];
   const avList = gdNodes.reduce((acc, gd: XmlNode) => ({ ...acc, [gd.attrs.name]: gd.attrs.fmla }), {});
 
-  return removeEmptyIn({ name, fill, line, avList });
+  return removeEmptyIn<presetGeometry>({ name, fill, line, avList });
 }

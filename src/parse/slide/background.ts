@@ -1,8 +1,8 @@
-import { Fill, parseFill } from '@/parse/attrs/fill';
+import { Fill, parseFill } from '@/parse/attrs';
 import { Background } from '@/parse/slide/types';
 import { XmlNode } from '@/xmlNode';
 import SlideBase from './slideBase';
-import { parseColor } from '../attrs/color';
+import { parseColor } from '@/parse/attrs';
 /**
  * 背景获取优先级 slide.bg > slideLayout.bg
  */

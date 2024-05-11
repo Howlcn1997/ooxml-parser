@@ -1,12 +1,8 @@
 import { XmlNode } from '@/xmlNode';
-import parseXfrm from '@/parse/attrs/xfrm';
-import { Fill, parseFill } from '@/parse/attrs/fill';
 import { Shape } from './type';
 import SlideBase from '../slide/slideBase';
-import extractGeometry from '../attrs/geometry';
-import parseContent from '../attrs/textContent';
 import { removeEmptyIn } from '@/utils/tools';
-import { parseEffect } from '../attrs/effect';
+import { parseFill, Fill, parseShapeEffect, parseGeometry, parseTxBody, parseXfrm } from '@/parse/attrs';
 
 export default async function parse(shape: XmlNode, slide: SlideBase): Promise<Shape> {
   const xfrm = await parseXfrm(shape, slide);
@@ -16,12 +12,12 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<S
 
   const shapeProps = shape.child('spPr') as XmlNode;
   const fill = (await parseFill(shapeProps, slide)) as Fill;
-  const geometry = await extractGeometry(shapeProps, slide, xfrm);
-  const content = await parseContent(shape, slide);
-  const effect = await parseEffect(shapeProps.child('effectLst'), slide) || undefined
-  return removeEmptyIn({
-    id,
+  const geometry = await parseGeometry(shapeProps, slide, xfrm);
+  const content = await parseTxBody(shape, slide);
+  const effect = await parseShapeEffect(shapeProps.child('effectLst'), slide);
+  return removeEmptyIn<Shape>({
     type: 'shape',
+    id,
     flipH,
     flipV,
     fill,

@@ -1,29 +1,26 @@
 import { XmlNode } from '@/xmlNode';
 import SlideBase from '../slide/slideBase';
-import { Paragraph, TextContent, Text } from './types';
+import { Paragraph, TextBody, Text } from './types';
 import { emusToPercentage } from '@/utils/unit';
-import { parseFill } from './fill';
-import parseLine from './line';
-import { fontFamily } from './font';
+import { parseFill, parseLine, parseTextEffect } from '@/parse/attrs';
+import { fontFamily } from '@/parse/attrs';
 import { removeEmptyIn } from '@/utils/tools';
-import { parseEffect } from './effect';
 
-export default async function parseContent(shape: XmlNode, slide: SlideBase): Promise<TextContent | undefined> {
-  const txBody = shape.child('txBody');
-  if (!txBody) return;
+export async function parseTxBody(txBodyNode: XmlNode | undefined, slide: SlideBase): Promise<TextBody | undefined> {
+  if (!txBodyNode) return;
   // 正文属性
-  const contentPr = textContentPr(txBody.child('bodyPr') as XmlNode, slide);
+  const txBodyPr = textBodyPr(txBodyNode.child('bodyPr') as XmlNode, slide);
   // 文本列表样式
-  // const listStyle = parseListStyle(txBody.child('lstStyle') as XmlNode);
+  // const listStyle = parseListStyle(txBodyNode.child('lstStyle') as XmlNode);
   // 文本段落
-  const paragraphs = await parseParagraphs(txBody.allChild('p') as XmlNode[], slide);
+  const paragraphs = await parseParagraphs(txBodyNode.allChild('p') as XmlNode[], slide);
 
   if (!paragraphs.length) return;
 
-  return { ...contentPr, paragraphs };
+  return { ...txBodyPr, paragraphs };
 }
 
-function textContentPr(txBodyPr: XmlNode, slide: SlideBase): Omit<TextContent, 'paragraphs'> {
+function textBodyPr(txBodyPr: XmlNode, slide: SlideBase): Omit<TextBody, 'paragraphs'> {
   const lHandler = slide.parser.config.lengthHandler;
 
   const {
@@ -51,7 +48,7 @@ function textContentPr(txBodyPr: XmlNode, slide: SlideBase): Omit<TextContent, '
     },
   };
 
-  function parseAutoFix(txBodyPr: XmlNode): TextContent['autoFix'] {
+  function parseAutoFix(txBodyPr: XmlNode): TextBody['autoFix'] {
     const children = txBodyPr.children;
     for (const child of children) {
       switch (child.name) {
@@ -66,7 +63,7 @@ function textContentPr(txBodyPr: XmlNode, slide: SlideBase): Omit<TextContent, '
     return 'no';
   }
 
-  function vertToCssWriteMode(vert: string): TextContent['writeMode'] {
+  function vertToCssWriteMode(vert: string): TextBody['writeMode'] {
     switch (vert) {
       // 横向
       case 'vert':
@@ -157,10 +154,10 @@ function parseParagraphs(pNodes: XmlNode[], slide: SlideBase): Promise<Paragraph
 
         text.highlight = await parseFill(runPropsNode.child('highlight'), slide, null);
 
-        text.effect = await parseEffect(runPropsNode.child('effectLst'), slide);
+        text.effect = await parseTextEffect(runPropsNode.child('effectLst'), slide);
 
         const tNode = runNode.child('t') as XmlNode;
-        return removeEmptyIn({
+        return removeEmptyIn<Text>({
           ...text,
           content: tNode.text,
           size: fszHandler(+size),

@@ -5,7 +5,7 @@ import { Xfrm } from './types';
 /**
  * avLst 转换为SVG path，并将SVG视图大小缩放至shapeXfrm尺寸
  */
-export default function parsePath(pathNode: XmlNode, slide: SlideBase, shapeXfrm: Xfrm) {
+export function parsePath(pathNode: XmlNode, slide: SlideBase, shapeXfrm: Xfrm) {
   const children = pathNode.children;
   let { w, h } = pathNode.attrs;
   w = slide.parser.config.lengthHandler(w);

@@ -82,20 +82,20 @@ export interface Xfrm {
 export interface CustomGeometry {
   name: string;
   paths: string[];
-  line: Line | null;
-  fill: Fill | null;
+  line?: Line;
+  fill?: Fill;
 }
 
 export interface presetGeometry {
   name: string;
   // paths: string[];
-  line: Line | null;
-  fill: Fill | null;
+  line?: Line;
+  fill?: Fill;
   // 几何形状的调整值列表
   avList: Record<string, string>;
 }
 
-export interface TextContent {
+export interface TextBody {
   pad: any;
   writeMode: 'vertical-rl' | 'horizontal-tb';
   autoFix:
@@ -181,7 +181,9 @@ export interface Shadow {
   color: Color;
 }
 
-export interface TextEffect extends Effect {}
+export interface TextEffect extends Effect {
+  outerShadow?: any;
+}
 
 export interface ShapeEffect extends Effect {}
 /**

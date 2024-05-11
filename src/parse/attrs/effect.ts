@@ -1,17 +1,25 @@
 import { XmlNode } from '@/xmlNode';
-import { Effect, Glow, Reflection, Shadow, ShadowType, SoftEdge } from './types';
+import {} from './types';
 import SlideBase from '../slide/slideBase';
-import { parseColor } from './color';
+import { ShapeEffect, TextEffect, Effect, Glow, Reflection, Shadow, ShadowType, SoftEdge, parseColor } from '@/parse/attrs';
 import { angleToDegrees, emusToPercentage } from '@/utils/unit';
 import { removeEmptyIn } from '@/utils/tools';
 
-export async function parseEffect(effectLst: XmlNode | null, slide: SlideBase): Promise<Effect | null> {
-  if (!effectLst) return null;
+export async function parseTextEffect(effectLst: XmlNode | undefined, slide: SlideBase): Promise<TextEffect | undefined> {
+  return await parseEffect(effectLst, slide);
+}
+
+export async function parseShapeEffect(effectLst: XmlNode | undefined, slide: SlideBase): Promise<ShapeEffect | undefined> {
+  return await parseEffect(effectLst, slide);
+}
+
+async function parseEffect(effectLst: XmlNode | undefined, slide: SlideBase): Promise<Effect | undefined> {
+  if (!effectLst) return;
 
   const effect: Record<string, any> = {};
 
   const children = effectLst.children;
-  if (children.length === 0) return null;
+  if (children.length === 0) return;
 
   for (const child of children) {
     switch (child.name) {
@@ -64,7 +72,7 @@ async function shadow(node: XmlNode, slide: SlideBase): Promise<Omit<Shadow, 'ty
 
 async function reflection(node: XmlNode, slide: SlideBase): Promise<Reflection> {
   const { algn, dist, dir, blurRad, sx, sy, stA, endA, stPos, endPos, rotWithShape } = node.attrs;
-  return removeEmptyIn({
+  return removeEmptyIn<Reflection>({
     align: algn,
     blurRad: slide.parser.config.lengthHandler(+blurRad),
     dir: angleToDegrees(+dir || 0),

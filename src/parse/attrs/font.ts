@@ -5,8 +5,6 @@ const langMap: Record<string, string> = {
   'zh-CN': 'ea',
 };
 
-export function fontSize() {}
-
 export function fontFamily(node: XmlNode): string | null {
   const { lang } = node.attrs;
 

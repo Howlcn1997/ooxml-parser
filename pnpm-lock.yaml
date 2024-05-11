@@ -5,15 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
-  '@types/file-saver':
-    specifier: ^2.0.7
-    version: 2.0.7
   '@types/jsdom':
     specifier: ^21.1.6
     version: 21.1.6
-  file-saver:
-    specifier: ^2.0.5
-    version: 2.0.5
   jsdom:
     specifier: ^24.0.0
     version: 24.0.0
@@ -1546,10 +1540,6 @@ packages:
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
     dev: true
 
-  /@types/file-saver@2.0.7:
-    resolution: {integrity: sha512-dNKVfHd/jk0SkR/exKGj2ggkB45MAkzvWCaqLUUgkyjITkGNzH8H+yUwr+BLJUBjZOe9w8X3wgmXhZDRg1ED6A==}
-    dev: false
-
   /@types/jsdom@21.1.6:
     resolution: {integrity: sha512-/7kkMsC+/kMs7gAYmmBR9P0vGTnOoLhQhyhQJSlXGI5bzTHp6xdo0TtKWQAsz6pmSAeVqKSbqeyP6hytqr9FDw==}
     dependencies:
@@ -2577,10 +2567,6 @@ packages:
     dependencies:
       flat-cache: 3.2.0
     dev: true
-
-  /file-saver@2.0.5:
-    resolution: {integrity: sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==}
-    dev: false
 
   /file-uri-to-path@1.0.0:
     resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}

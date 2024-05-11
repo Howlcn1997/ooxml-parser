@@ -1,10 +1,10 @@
 import { XmlNode } from '@/xmlNode';
 import SlideBase from '../slide/slideBase';
 import { Line } from './types';
-import { Fill, parseFill } from './fill';
+import { Fill, parseFill } from '@/parse/attrs';
 
-export default async function parseLine(lineNode: XmlNode | null, slide: SlideBase): Promise<Line | null> {
-  if (!lineNode) return null;
+export async function parseLine(lineNode: XmlNode | undefined, slide: SlideBase): Promise<Line | undefined> {
+  if (!lineNode) return;
 
   const w = slide.parser.config.lengthHandler(+(lineNode.attrs.w || '9525'));
   const cap = parseLineCap(lineNode);

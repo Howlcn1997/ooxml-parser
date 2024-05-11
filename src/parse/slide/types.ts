@@ -1,4 +1,4 @@
-import { Fill } from '@/parse/attrs/fill';
+import { Fill } from '@/parse/attrs';
 import { Element } from '@/parse/shape/type';
 
 export interface Rel {

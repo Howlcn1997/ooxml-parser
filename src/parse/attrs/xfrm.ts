@@ -8,7 +8,7 @@ import { Xfrm } from './types';
  * -
  * 解析 xfrm 元素
  */
-export default async function parse(shape: XmlNode, slide: SlideBase): Promise<Xfrm> {
+export async function parseXfrm(shape: XmlNode, slide: SlideBase): Promise<Xfrm> {
   const xfrm = (shape.child('spPr') as XmlNode).child('xfrm') as XmlNode;
 
   const { flipV, flipH } = xfrm.attrs || {};

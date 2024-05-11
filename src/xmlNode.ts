@@ -45,9 +45,9 @@ export class XmlNode {
     return this._attrs;
   }
 
-  child(name: string, namespace?: string): XmlNode | null {
+  child(name: string, namespace?: string): XmlNode | undefined {
     return (
-      this.children.find(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name)) || null
+      this.children.find(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name)) || undefined
     );
   }
   allChild(name?: string, namespace?: string): XmlNode[] {

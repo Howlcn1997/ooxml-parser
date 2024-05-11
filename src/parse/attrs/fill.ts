@@ -5,8 +5,12 @@ import { Percentage, angleToDegrees, emusAlphaToOpacity, emusToPercentage } from
 import JSZip from 'jszip';
 import SlideBase from '../slide/slideBase';
 
-export async function parseFill(elementPr: XmlNode | null, slide: SlideBase, defaultFill?: any): Promise<Fill | null> {
-  if (!elementPr) return null;
+export async function parseFill(
+  elementPr: XmlNode | undefined,
+  slide: SlideBase,
+  defaultFill?: any
+): Promise<Fill | undefined> {
+  if (!elementPr) return;
 
   for (const child of elementPr.children) {
     switch (child.name) {
@@ -33,14 +37,14 @@ export async function parseFill(elementPr: XmlNode | null, slide: SlideBase, def
   return { type: 'solid', value: { ...theme.schemeClr.accent1, scheme: 'accent1' } };
 }
 
-export async function parseSolidFill(node: XmlNode, slide: SlideBase | null): Promise<SolidFill> {
+async function parseSolidFill(node: XmlNode, slide: SlideBase | null): Promise<SolidFill> {
   return {
     type: 'solid',
     value: await parseColor(node, slide),
   };
 }
 
-export async function parseGradientFill(node: XmlNode, slide: SlideBase | null): Promise<GradientFill> {
+async function parseGradientFill(node: XmlNode, slide: SlideBase | null): Promise<GradientFill> {
   const rotateWithShape = node.attrs.rotWithShape === '1';
 
   const gsNodes = node.child('gsLst')?.allChild('gs') as XmlNode[];
@@ -94,7 +98,7 @@ export async function parseGradientFill(node: XmlNode, slide: SlideBase | null):
  * 图片或纹理(纹理填充本质上也是图片填充)
  * doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.blipfill?view=openxml-2.8.1
  */
-export async function parsePicFill(node: XmlNode, slide: SlideBase): Promise<PicFill> {
+async function parsePicFill(node: XmlNode, slide: SlideBase): Promise<PicFill> {
   const value: Record<string, any> = {};
 
   value.rotateWithShape = node.attrs.rotWithShape === '1';
@@ -158,7 +162,7 @@ export async function parsePicFill(node: XmlNode, slide: SlideBase): Promise<Pic
  *  - canvas修改前景色和后景色
  *  - 以平铺的形式返回
  */
-export async function parsePatternFill(node: XmlNode, slide: SlideBase): Promise<PatternFill> {
+async function parsePatternFill(node: XmlNode, slide: SlideBase): Promise<PatternFill> {
   const value: Record<string, any> = {};
 
   value.rotateWithShape = node.attrs.rotWithShape === '1';
@@ -190,7 +194,7 @@ interface GradientStop {
   pos: Percentage;
   color: Color;
 }
-export interface GradientFill {
+interface GradientFill {
   type: 'gradient';
   value: {
     type: GradientFillType;
@@ -202,7 +206,7 @@ export interface GradientFill {
 }
 
 // 图案填充
-export interface PatternFill {
+interface PatternFill {
   type: 'pattern';
   value: {
     preset: string;
@@ -248,7 +252,7 @@ interface PicFillDimension {
 }
 
 // 图片或纹理填充
-export interface PicFill {
+interface PicFill {
   type: 'pic';
   value: {
     rotateWithShape: boolean;
