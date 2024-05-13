@@ -45,12 +45,77 @@ export interface Pic extends BaseElement {
   type: 'pic';
 }
 
-export interface GraphicFrame extends BaseElement {
-  type: Chart['type'] | Table['type'] | Diagram['type'];
+interface LineChart {
+  chatType: 'line';
 }
 
-export interface Chart {
+interface Line3DChart {
+  chatType: 'line3D';
+}
+
+interface BarChart {
+  chatType: 'bar';
+}
+
+interface Bar3DChart {
+  chatType: 'bar3D';
+}
+
+interface PieChart {
+  chatType: 'pie';
+}
+
+interface Pie3DChart {
+  chatType: 'pie3D';
+}
+
+interface DoughnutChart {
+  chatType: 'doughnut';
+}
+
+interface AreaChart {
+  chatType: 'area';
+}
+
+interface ScatterChart {
+  chatType: 'scatter';
+}
+
+interface BubbleChart {
+  chatType: 'bubble';
+}
+
+interface RadarChart {
+  chatType: 'radar';
+}
+
+interface SurfaceChart {
+  chatType: 'surface';
+}
+
+interface StockChart {
+  chatType: 'stock';
+  name: string;
+}
+
+type ChartBase =
+  | LineChart
+  | Line3DChart
+  | BarChart
+  | Bar3DChart
+  | PieChart
+  | Pie3DChart
+  | DoughnutChart
+  | AreaChart
+  | ScatterChart
+  | BubbleChart
+  | RadarChart
+  | SurfaceChart
+  | StockChart;
+
+export interface Chart extends Omit<ChartBase, 'chatType'> {
   type: 'chart';
+  chatType: ChartBase['chatType'];
 }
 
 export interface Table {
@@ -59,6 +124,17 @@ export interface Table {
 
 export interface Diagram {
   type: 'diagram';
+}
+
+export interface Ole {
+  type: 'ole';
+}
+
+type GraphicFrameType = 'chart' | 'table' | 'diagram' | 'ole';
+
+export interface GraphicFrame extends Chart, Table, Diagram, Ole {
+  id: string;
+  dimension: Dimension;
 }
 
 export interface Group extends BaseElement {}
