@@ -31,7 +31,7 @@ interface Dimension {
 
 export interface Shape extends BaseElement {
   type: 'shape';
-  content?: TextBody;
+  txBody?: TextBody;
   geometry: CustomGeometry | presetGeometry;
 }
 
@@ -46,7 +46,19 @@ export interface Pic extends BaseElement {
 }
 
 export interface GraphicFrame extends BaseElement {
-  type: 'graphicFrame';
+  type: Chart['type'] | Table['type'] | Diagram['type'];
+}
+
+export interface Chart {
+  type: 'chart';
+}
+
+export interface Table {
+  type: 'table';
+}
+
+export interface Diagram {
+  type: 'diagram';
 }
 
 export interface Group extends BaseElement {}

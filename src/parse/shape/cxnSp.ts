@@ -20,7 +20,7 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<C
 
   const shapeProps = shape.child('spPr') as XmlNode;
   const fill = (await parseFill(shapeProps, slide)) as Fill;
-  const content = await parseTxBody(shape.child('txBody'), slide);
+  const txBody = await parseTxBody(shape.child('txBody'), slide);
   const geometry = await parseGeometry(shapeProps, slide, xfrm);
 
   return removeEmptyIn<CxnShape>({
@@ -31,7 +31,7 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<C
     flipH,
     flipV,
     fill,
-    content,
+    txBody,
     geometry,
     dimension: { w, h, left, top },
   });

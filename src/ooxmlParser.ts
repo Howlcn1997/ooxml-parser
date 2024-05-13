@@ -274,6 +274,7 @@ class OOXMLParser {
     if (!this.zip) throw new Error('No zip file loaded');
     const _zipFiles = { ...this.zip.files } as Record<string, any>;
     const filePaths = Object.keys(_zipFiles);
+    console.log(_zipFiles)
     for (const path of filePaths) {
       _zipFiles[path] = ((await this.readXmlFile(path)) as any)._node;
     }
