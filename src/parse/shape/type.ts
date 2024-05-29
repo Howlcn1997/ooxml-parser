@@ -45,97 +45,71 @@ export interface Pic extends BaseElement {
   type: 'pic';
 }
 
-interface LineChart {
-  chatType: 'line';
+export interface ChartData {
+  series: { name: string; data: { name: string; data: []; shape: Shape }[] }[];
 }
 
-interface Line3DChart {
-  chatType: 'line3D';
+export interface LineChart {}
+
+export interface Line3DChart {}
+
+// doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.charts.barchart?view=openxml-2.8.1
+export interface BarChart {
+  title: TextBody;
+  grouping: string;
+  data: any;
 }
 
-interface BarChart {
-  chatType: 'bar';
-}
+export interface Bar3DChart {}
 
-interface Bar3DChart {
-  chatType: 'bar3D';
-}
+export interface PieChart {}
 
-interface PieChart {
-  chatType: 'pie';
-}
+export interface Pie3DChart {}
 
-interface Pie3DChart {
-  chatType: 'pie3D';
-}
+export interface DoughnutChart {}
 
-interface DoughnutChart {
-  chatType: 'doughnut';
-}
+export interface AreaChart {}
 
-interface AreaChart {
-  chatType: 'area';
-}
+export interface ScatterChart {}
 
-interface ScatterChart {
-  chatType: 'scatter';
-}
+export interface BubbleChart {}
 
-interface BubbleChart {
-  chatType: 'bubble';
-}
+export interface RadarChart {}
 
-interface RadarChart {
-  chatType: 'radar';
-}
+export interface SurfaceChart {}
 
-interface SurfaceChart {
-  chatType: 'surface';
-}
-
-interface StockChart {
-  chatType: 'stock';
+export interface StockChart {
   name: string;
 }
 
-type ChartBase =
-  | LineChart
-  | Line3DChart
-  | BarChart
-  | Bar3DChart
-  | PieChart
-  | Pie3DChart
-  | DoughnutChart
-  | AreaChart
-  | ScatterChart
-  | BubbleChart
-  | RadarChart
-  | SurfaceChart
-  | StockChart;
+export type Chart =
+  | (LineChart & { chartType: 'line' })
+  | (Line3DChart & { chartType: 'line3D' })
+  | (BarChart & { chartType: 'bar' })
+  | (Bar3DChart & { chartType: 'bar3D' })
+  | (PieChart & { chartType: 'pie' })
+  | (Pie3DChart & { chartType: 'pie3D' })
+  | (DoughnutChart & { chartType: 'doughnut' })
+  | (AreaChart & { chartType: 'area' })
+  | (ScatterChart & { chartType: 'scatter' })
+  | (BubbleChart & { chartType: 'bubble' })
+  | (RadarChart & { chartType: 'radar' })
+  | (SurfaceChart & { chartType: 'surface' })
+  | (StockChart & { chartType: 'stock' });
 
-export interface Chart extends Omit<ChartBase, 'chatType'> {
-  type: 'chart';
-  chatType: ChartBase['chatType'];
-}
+export interface Table {}
 
-export interface Table {
-  type: 'table';
-}
+export interface Diagram {}
 
-export interface Diagram {
-  type: 'diagram';
-}
+export interface Ole {}
 
-export interface Ole {
-  type: 'ole';
-}
+type GraphicFrameBase =
+  | (Chart & { type: 'chart' })
+  | (Table & { type: 'table' })
+  | (Diagram & { type: 'diagram' })
+  | (Ole & { type: 'ole' });
 
-type GraphicFrameType = 'chart' | 'table' | 'diagram' | 'ole';
-
-export interface GraphicFrame extends Chart, Table, Diagram, Ole {
-  id: string;
-  dimension: Dimension;
-}
+export type GraphicFrame = GraphicFrameBase & { id: string; dimension: Dimension };
 
 export interface Group extends BaseElement {}
 

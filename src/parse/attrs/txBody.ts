@@ -137,7 +137,16 @@ function parseParagraphs(pNodes: XmlNode[], slide: SlideBase): Promise<Paragraph
       runNodes.map(async runNode => {
         const text: Record<string, any> = {};
 
-        const runPropsNode = runNode.child('rPr') as XmlNode;
+        const tNode = runNode.child('t') as XmlNode;
+
+        const runPropsNode = runNode.child('rPr');
+
+        if (!runPropsNode)
+          return {
+            content: tNode.text,
+            size: fszHandler(1800),
+          };
+
         const { sz: size = '1800', b, i, strike, u, spc } = runPropsNode.attrs;
 
         if (b) text.bold = b === '1';
@@ -156,7 +165,6 @@ function parseParagraphs(pNodes: XmlNode[], slide: SlideBase): Promise<Paragraph
 
         text.effect = await parseTextEffect(runPropsNode.child('effectLst'), slide);
 
-        const tNode = runNode.child('t') as XmlNode;
         return removeEmptyIn<Text>({
           ...text,
           content: tNode.text,
