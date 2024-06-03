@@ -1,6 +1,6 @@
 import { XmlNode } from '@/xmlNode';
 import { TextBody, parseTxBody, parseXfrm } from '@/parse/attrs';
-import { BarChart, Chart, Diagram, GraphicFrame, Ole, Table } from './type';
+import { BarChart, Chart, ChartData, Diagram, GraphicFrame, Ole, Table } from './type';
 import SlideBase from '../slide/slideBase';
 
 export default async function parse(shape: XmlNode, slide: SlideBase): Promise<GraphicFrame> {
@@ -61,25 +61,32 @@ async function parseBarChart(chartXmlNode: XmlNode, slide: SlideBase): Promise<B
   return { title, grouping, data: [] };
 }
 
-async function parseChartData(plotChartNode: XmlNode, slide: SlideBase): ChartData {
-  const barChartNode = plotChartNode.child('barChart') as XmlNode;
-  const grouping = barChartNode.child('grouping')!.attrs.val;
-  const seriesNodes = barChartNode.allChild('ser') as XmlNode[];
-  const data = seriesNodes.map(seriesNode => {
+async function parseChartData(chartNode: XmlNode, slide: SlideBase): Promise<ChartData> {
+  const grouping = chartNode.child('grouping')!.attrs.val;
+  const seriesNodes = chartNode.allChild('ser') as XmlNode[];
+  const series = seriesNodes.map(seriesNode => {
+    const index = seriesNode.child('idx')?.attrs.val;
     const colName = seriesNode.child('tx')!.child('strRef')!.child('strCache')!.child('pt')!.child('v')!.text;
+    const rowName = seriesNode
+      .child('cat')!
+      .child('strRef')!
+      .child('strCache')!
+      .allChild('pt')
+      .find(i => i.attrs.idx === index)!
+      .child('v')!.text;
 
+    const numCache = seriesNode.child('val')!.child('numRef')!.child('numCache')!;
+    const ptNodes = numCache.allChild('pt') as XmlNode[];
+    const valuesCount = +numCache.child('ptCount')!.attrs.val as number;
+    const values = ptNodes.reduce((acc, ptNode) => {
+      acc[ptNode.attrs.idx] = ptNode.child('v')!.text;
+      return acc;
+    }, {} as Record<number, string>);
+
+    return { colName, values: [{ rowName, values: Array.from({ length: valuesCount }, (_, i) => values[i]) }] };
   });
-  return [
-    {
-      colName: '',
-      values: [
-        {
-          rowName: '',
-          values: [1, 2, 3, 4, 5],
-        },
-      ],
-    },
-  ];
+
+  return { series };
 }
 
 async function parseTable(tableNode: XmlNode, slide: SlideBase): Promise<Table> {

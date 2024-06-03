@@ -50,6 +50,7 @@ export class XmlNode {
       this.children.find(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name)) || undefined
     );
   }
+
   allChild(name?: string, namespace?: string): XmlNode[] {
     return name
       ? this.children.filter(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name))

@@ -46,7 +46,7 @@ export interface Pic extends BaseElement {
 }
 
 export interface ChartData {
-  series: { name: string; data: { name: string; data: []; shape: Shape }[] }[];
+  series: { colName: string; values: { rowName: string; values: string[]; shape?: Shape }[] }[];
 }
 
 export interface LineChart {}
