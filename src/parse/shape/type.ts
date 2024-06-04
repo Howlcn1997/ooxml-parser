@@ -45,9 +45,10 @@ export interface Pic extends BaseElement {
   type: 'pic';
 }
 
-export interface ChartData {
-  series: { colName: string; values: { rowName: string; values: string[]; shape?: Shape }[] }[];
-}
+export type ChartData = {
+  colName: string;
+  values: { rowName: string; values: string[]; shape?: Shape }[];
+}[];
 
 export interface LineChart {}
 
@@ -55,14 +56,19 @@ export interface Line3DChart {}
 
 // doc: https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.charts.barchart?view=openxml-2.8.1
 export interface BarChart {
-  title: TextBody;
+  title?: TextBody;
   grouping: string;
   data: any;
+  valAx?: TextBody;
+  catAx?: TextBody;
 }
 
 export interface Bar3DChart {}
 
-export interface PieChart {}
+export interface PieChart {
+  title?: TextBody;
+  data: any;
+}
 
 export interface Pie3DChart {}
 

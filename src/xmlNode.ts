@@ -45,15 +45,32 @@ export class XmlNode {
     return this._attrs;
   }
 
+  attribute(name: string) {
+    return this.attrs[name];
+  }
+
   child(name: string, namespace?: string): XmlNode | undefined {
-    return (
-      this.children.find(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name)) || undefined
-    );
+    return this.children.find(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name)) || undefined;
+  }
+
+  childWith(name: string, withFn: (childNode: XmlNode) => boolean, namespace?: string): XmlNode | undefined {
+    return this.allChildWith(name, withFn, namespace)[0];
+  }
+
+  deepChild(names: string[], namespace?: string): XmlNode | undefined {
+    let node: XmlNode | undefined = this;
+    for (const name of names) {
+      node = node.child(name, namespace);
+      if (!node) return;
+    }
+    return node;
   }
 
   allChild(name?: string, namespace?: string): XmlNode[] {
-    return name
-      ? this.children.filter(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name))
-      : this.children;
+    return name ? this.children.filter(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name)) : this.children;
+  }
+
+  allChildWith(name: string, withFn: (childNode: XmlNode) => boolean, namespace?: string): XmlNode[] {
+    return this.children.filter(xNode => (namespace ? xNode.tag === `${namespace}:${name}` : xNode.name === name) && withFn(xNode));
   }
 }

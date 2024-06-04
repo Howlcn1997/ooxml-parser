@@ -1,7 +1,7 @@
 import { XmlNode } from '@/xmlNode';
 import { CxnShape } from './type';
 import SlideBase from '@/parse/slide/slideBase';
-import { Fill, parseFill, parseGeometry, parseTxBody, parseXfrm } from '@/parse/attrs';
+import { Fill, parseFill, parseGeometry, parseRichTx, parseXfrm } from '@/parse/attrs';
 import { removeEmptyIn } from '@/utils/tools';
 
 /**
@@ -20,7 +20,7 @@ export default async function parse(shape: XmlNode, slide: SlideBase): Promise<C
 
   const shapeProps = shape.child('spPr') as XmlNode;
   const fill = (await parseFill(shapeProps, slide)) as Fill;
-  const txBody = await parseTxBody(shape.child('txBody'), slide);
+  const txBody = await parseRichTx(shape.child('txBody'), slide);
   const geometry = await parseGeometry(shapeProps, slide, xfrm);
 
   return removeEmptyIn<CxnShape>({

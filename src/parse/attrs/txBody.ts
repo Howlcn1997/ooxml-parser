@@ -6,7 +6,7 @@ import { parseFill, parseLine, parseTextEffect } from '@/parse/attrs';
 import { fontFamily } from '@/parse/attrs';
 import { removeEmptyIn } from '@/utils/tools';
 
-export async function parseTxBody(txBodyNode: XmlNode | undefined, slide: SlideBase): Promise<TextBody | undefined> {
+export async function parseRichTx(txBodyNode: XmlNode | undefined, slide: SlideBase): Promise<TextBody | undefined> {
   if (!txBodyNode) return;
   // 正文属性
   const txBodyPr = textBodyPr(txBodyNode.child('bodyPr') as XmlNode, slide);
